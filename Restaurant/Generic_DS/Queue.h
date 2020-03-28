@@ -57,6 +57,7 @@ public :
 	bool enqueue(const T& newEntry);
 	bool dequeue(T& frntEntry);  
 	bool peekFront(T& frntEntry)  const;
+	bool Find(T key) const;
 	T* toArray(int& count);	//returns array of T (array if items)
 	~Queue();
 };
@@ -175,6 +176,41 @@ Queue<T>::~Queue()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+Function: Find(T key) const
+Returns True if it finds the value of the key
+
+*/
+
+template <typename T>
+bool Queue<T>::Find(T key) const
+{
+	if (!frontPtr) return false;
+	Node<T>* p = frontPtr;
+	while (p) {
+		if (p->getItem() == key) return true;
+		p = p->getNext();
+	}
+	return false;
+}
+
+////Overriding this function to find Order IDs
+//template<>
+//bool Queue<Order*>::Find(int key) const
+//{
+//	if (!frontPtr) return false;
+//	Node<Order*>* p = frontPtr;
+//	while (p) {
+//		if (p->getItem()->GetID() == key->GetID()) return true;
+//		p = p->getNext();
+//	}
+//	return false;
+//}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /*
 Function: toArray

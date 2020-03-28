@@ -5,6 +5,12 @@ Cook::Cook()
 {
 }
 
+Cook::Cook(ORD_TYPE inputType, int inputSpeed, int inputNDishesUntilBreak, int inputBreakDuration) {
+	type = inputType;
+	speed = inputSpeed;
+	nDishesUntilBreak = inputNDishesUntilBreak;
+	breakDuration = inputBreakDuration;
+}
 
 Cook::~Cook()
 {

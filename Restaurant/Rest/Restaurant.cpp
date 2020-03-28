@@ -4,7 +4,7 @@
 using namespace std;
 
 #include "Restaurant.h"
-#include "..\Events\ArrivalEvent.h"
+
 
 
 Restaurant::Restaurant() 
@@ -15,11 +15,12 @@ Restaurant::Restaurant()
 void Restaurant::RunSimulation()
 {
 	pGUI = new GUI;
-	PROG_MODE	mode = pGUI->getGUIMode();
+	mode = pGUI->getGUIMode();
 		
 	switch (mode)	//Add a function for each mode in next phases
 	{
 	case MODE_INTR:
+		Phase1Simulator();
 		break;
 	case MODE_STEP:
 		break;
@@ -69,8 +70,51 @@ void Restaurant::FillDrawingList()
 
 }
 
+PROG_MODE Restaurant::getMode() {
+	return mode;
+}
 
+//////////////////////////////////  Phase 1 Simulation functions   /////////////////////////////
 
+void Restaurant::Phase1Simulator() {
+	//MOEMEN: Don't get pissed I am just testing my stuff not trespassing your territory
+	ArrivalEvent E1(12, 1, TYPE_NRM, 4.5, 5);
+	ArrivalEvent E2(12, 2, TYPE_VGAN, 4.5, 5);
+	ArrivalEvent E3(12, 3, TYPE_VIP, 4.5, 5);
+	pGUI->PrintMessage("Welcome to Phase 1 Simulation. Mouse Click = Time Step. Have fun!");
+	pGUI->waitForClick();
+	CancelEvent E4(12, 1);
+	PromoteEvent E5(12, 2, 15);
+	pGUI->waitForClick();
+}
+
+void Restaurant::AddtoNormalOrders(Order* po) {
+	normalOrders.InsertEnd(po);
+}
+
+void Restaurant::AddtoVeganOrders(Order* po) {
+	veganOrders.enqueue(po);
+}
+
+void Restaurant::AddtoVIPOrders(Order* po) {
+	VIPOrders.InsertEnd(po);
+}
+
+ORD_TYPE Restaurant::typeFinder(int key) {
+	if (normalOrders.Find(key)) return TYPE_NRM;
+	if (VIPOrders.Find(key)) return TYPE_VIP;
+	else return TYPE_VGAN;
+}
+
+void Restaurant::CancelNormalOrder(int id) {
+	normalOrders.DeleteNode(id);
+}
+
+void Restaurant::PromoteNormalOrder(int id, double extraMoney) {
+	Order* oldNormal = normalOrders.ReturnAndRemove(id);
+	Order* newVIP = new Order(oldNormal->getArrTime(), id, TYPE_VIP, oldNormal->getTotalMoney() + extraMoney, oldNormal->getNDishes());
+	VIPOrders.InsertEnd(newVIP);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 /// ==> 
@@ -106,7 +150,7 @@ void Restaurant::Just_A_Demo()
 
 	for(int i=0; i<C_count; i++)
 	{
-		cID+= (rand()%15+1);	
+		cID += (rand()%15+1);
 		pC[i].setID(cID);
 		pC[i].setType((ORD_TYPE)(rand()%TYPE_CNT));
 	}	
@@ -123,7 +167,7 @@ void Restaurant::Just_A_Demo()
 		O_id += (rand()%4+1);		
 		int OType = rand()%TYPE_CNT;	//Randomize order type		
 		EvTime += (rand()%5+1);			//Randomize event time
-		pEv = new ArrivalEvent(EvTime,O_id,(ORD_TYPE)OType);
+		pEv = new ArrivalEvent(EvTime,O_id,(ORD_TYPE)OType, 1000, 5);
 		EventsQueue.enqueue(pEv);
 
 	}	

@@ -58,14 +58,17 @@ string GUI::GetString() const
 // ================================== OUTPUT FUNCTIONS ===================================
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void GUI::PrintMessage(string msg) const	//Prints a message on status bar
+void GUI::PrintMessage(string msg, int line, bool erase ) const	//Prints a message on status bar
 {
-	ClearStatusBar();	//First clear the status bar
-	
+	if (erase)
+		ClearStatusBar();	//First clear the status bar
+
 	pWind->SetPen(DARKRED);
-	pWind->SetFont(18, BOLD , BY_NAME, "Arial");   
-	pWind->DrawString(10, WindHeight - (int) (StatusBarHeight/1.5), msg); // You may need to change these coordinates later 
-	                                                                      // to be able to write multi-line
+	pWind->SetFont(18, BOLD, BY_NAME, "Arial");
+	pWind->DrawString(10, WindHeight - (int)(StatusBarHeight) + line*15, msg);
+	
+	
+
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void GUI::DrawString(const int iX, const int iY, const string Text)

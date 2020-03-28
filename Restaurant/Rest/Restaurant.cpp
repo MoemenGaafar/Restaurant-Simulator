@@ -93,6 +93,14 @@ void Restaurant::Just_A_Demo()
 	srand(time(NULL));
 
 	pGUI->PrintMessage("Just a Demo. Enter EVENTS Count(next phases should read I/P filename):");
+	pGUI->PrintMessage("This is line 2", 2, 0);
+	pGUI->PrintMessage("This is line 3", 3, 0);
+	pGUI->PrintMessage("This is line 4", 4, 0);
+	pGUI->PrintMessage("This is line 5", 5, 0);
+	pGUI->PrintMessage("This is line 6", 6, 0);
+	pGUI->PrintMessage("This is line 6", 6, 0);
+	pGUI->PrintMessage("This is line 7", 7, 0);
+	pGUI->PrintMessage("This is line 8", 8, 0);
 	EventCnt = atoi(pGUI->GetString().c_str());	//get user input as a string then convert to integer
 
 	pGUI->PrintMessage("Generating Events randomly... In next phases, Events should be loaded from a file...CLICK to continue");

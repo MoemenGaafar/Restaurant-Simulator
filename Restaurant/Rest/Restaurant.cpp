@@ -82,7 +82,6 @@ void Restaurant::Phase1Simulator() {
 	ArrivalEvent E2(12, 2, TYPE_VGAN, 4.5, 5);
 	ArrivalEvent E3(12, 3, TYPE_VIP, 4.5, 5);
 	pGUI->PrintMessage("Welcome to Phase 1 Simulation. Mouse Click = Time Step. Have fun!");
-	pGUI->waitForClick();
 	CancelEvent E4(12, 1);
 	PromoteEvent E5(12, 2, 15);
 	pGUI->waitForClick();

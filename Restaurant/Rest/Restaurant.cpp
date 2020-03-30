@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <time.h>
+#include <cstdio>
 #include <iostream>
 using namespace std;
 
@@ -60,6 +61,82 @@ Restaurant::~Restaurant()
 			delete pGUI;
 }
 
+void Restaurant::setAuto_p(int p)
+{
+	Auto_p = p;
+}
+
+int Restaurant::getAuto_p()
+{
+	return Auto_p;
+}
+
+void Restaurant::FileLoading()
+{ // This function asks the user for the name of the file that contains the restaurant data, then initiate the cooks and events queue
+	string filename;   
+	int N, G, V, SN, SG, SV, BO, BN, BG, BV, AutoP, numOfEvents,eventtype,ordertype, TS, ID, SIZE, MONEY, EXMONEY; //Variable i'll extract the data in 
+	char event, order;
+	cout << "Please enter the name of the data file: \n";
+	cin >> filename;
+	ifstream Datafile(filename.c_str());
+	if (!Datafile) {
+		cout << "File loading failed, please try again"; //opening file failure
+	}
+	else {
+		//extract the first few lines (the constants):
+		Datafile >> N >> G >> V >> SN >> SG >> SV >> BO >> BN >> BG >> BV >> AutoP >> numOfEvents;
+		setAuto_p(AutoP); //setting the auto promotion parameter of the restaurant
+		//Constructing the events queue:
+		for (int i = 0; i < numOfEvents; i++) {
+			Datafile >> event;
+			eventtype =toupper(event);
+			switch (eventtype) {
+			case 'R':{ORD_TYPE order_type;
+				Datafile >> order >> TS >> ID >> SIZE >> MONEY;
+				ordertype = toupper(order);
+				switch (ordertype) {
+				case 'N': order_type = TYPE_NRM;
+					break;
+				case 'G': order_type = TYPE_VGAN;
+					break;
+				case 'V': order_type = TYPE_VIP;
+					break;
+				}
+				Event* R_event_ptr = new ArrivalEvent(TS, ID, order_type, MONEY, SIZE);
+				EventsQueue.enqueue(R_event_ptr);
+			}
+				break;
+			case 'X':{Datafile >> TS >> ID;
+			Event* X_event_ptr = new CancelEvent(TS, ID);
+			EventsQueue.enqueue(X_event_ptr);
+			break; }
+			case 'P': {
+				Datafile >> TS >> ID >> EXMONEY;
+				Event* P_event_ptr = new PromoteEvent(TS, ID, EXMONEY);
+				EventsQueue.enqueue(P_event_ptr);
+				break; }
+			}
+		}
+		//constructing the normal cooks queue
+		for (int i = 0; i < N; i++) {
+			Cook* cook_ptr = new Cook(TYPE_NRM, SN, BO, BN);
+			normalCooks.enqueue(cook_ptr);
+		}
+		//constructing the vegan cooks queue
+		for (int i = 0; i < G; i++) {
+			Cook* cook_ptr = new Cook(TYPE_VGAN, SG, BO, BG);
+			veganCooks.enqueue(cook_ptr);
+		}
+		//constructing the vegan cooks queue
+		for (int i = 0; i < V; i++) {
+			Cook* cook_ptr = new Cook(TYPE_VIP, SV, BO, BV);
+			VIPCooks.enqueue(cook_ptr);
+		}
+	}
+	Datafile.close();
+
+}
+
 void Restaurant::FillDrawingList()
 {
 	//This function should be implemented in phase1
@@ -85,6 +162,7 @@ void Restaurant::Phase1Simulator() {
 	pGUI->waitForClick();
 	CancelEvent E4(12, 1);
 	PromoteEvent E5(12, 2, 15);
+	FileLoading();
 	pGUI->waitForClick();
 }
 

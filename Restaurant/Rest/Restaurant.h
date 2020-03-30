@@ -9,8 +9,8 @@
 #include "..\Events\ArrivalEvent.h"
 #include "..\Events\CancelEvent.h"
 #include "..\Events\PromoteEvent.h"
-
-
+#include<fstream>
+#include<string>
 #include "Order.h"
 
 // it is the maestro of the project
@@ -20,7 +20,7 @@ private:
 	GUI *pGUI;
 	Queue<Event*> EventsQueue;	//Queue of all events that will be loaded from file
 	PROG_MODE mode;
-
+	int Auto_p;
 	///Phase 1 members///
 	LinkedList<Order*> normalOrders; //Contains all unassigned Normal orders
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
@@ -49,7 +49,9 @@ public:
 	
 	Restaurant();
 	~Restaurant();
-	
+	void setAuto_p(int p);
+	int getAuto_p();
+	void FileLoading();
 	void ExecuteEvents(int TimeStep);	//executes all events at current timestep
 	void RunSimulation();
 	void FillDrawingList();

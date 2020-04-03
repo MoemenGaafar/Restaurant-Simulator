@@ -59,7 +59,7 @@ void Restaurant::RunSimulation()
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
 	pGUI->PrintMessage(line6, 6, 0); 
-	Sleep(3500); 
+	Sleep(4000); 
 
 }
 

@@ -29,7 +29,6 @@ private:
 	double Avg_wait = 0, Avg_serv = 0; //Average waiting and service times of finished orders 
 
 		
-	///Phase 1 members///
 	LinkedList<Order*> normalOrders; //Contains all unassigned Normal orders
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
 	LinkedList<Order*> VIPOrders; //Contains all unassigned VIP orders
@@ -53,7 +52,6 @@ private:
 
 	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
 
-	LinkedList<Cook*> busyCooks; //Contains cooks working on orders
 	Queue<Cook*> inBreakCooks; //Contains cooks taking breaks
 	
 	

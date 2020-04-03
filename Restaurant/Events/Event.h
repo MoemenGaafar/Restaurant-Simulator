@@ -18,7 +18,7 @@ public:
 	virtual ~Event();
 
 
-	virtual void Execute(Restaurant* pRest)=0;	////a pointer to "Restaurant" and events need it to execute
+	virtual void Execute(Restaurant* pRest)=0;	//a pointer to "Restaurant" and events need it to execute
 
 };
 

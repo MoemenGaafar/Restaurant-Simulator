@@ -90,9 +90,6 @@
     <ClInclude Include="Rest\Order.h">
       <Filter>Rest</Filter>
     </ClInclude>
-    <ClInclude Include="Rest\Restaurant.h">
-      <Filter>Rest</Filter>
-    </ClInclude>
     <ClInclude Include="Events\Event.h">
       <Filter>Events</Filter>
     </ClInclude>
@@ -117,9 +114,17 @@
     <ClInclude Include="Events\PromoteEvent.h">
       <Filter>Events</Filter>
     </ClInclude>
+    <ClInclude Include="Rest\Load.h">
+      <Filter>Rest</Filter>
+    </ClInclude>
+    <ClInclude Include="Rest\Restaurant.h">
+      <Filter>Rest</Filter>
+    </ClInclude>
+    <ClInclude Include="Rest\IDholder.h">
+      <Filter>Rest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Demo_Main.cpp" />
     <ClCompile Include="CMUgraphicsLib\jpeg\jcomapi.c">
       <Filter>CMUGraphicsLib\JPEG</Filter>
     </ClCompile>
@@ -231,9 +236,6 @@
     <ClCompile Include="Rest\Order.cpp">
       <Filter>Rest</Filter>
     </ClCompile>
-    <ClCompile Include="Rest\Restaurant.cpp">
-      <Filter>Rest</Filter>
-    </ClCompile>
     <ClCompile Include="Events\Event.cpp">
       <Filter>Events</Filter>
     </ClCompile>
@@ -249,6 +251,10 @@
     <ClCompile Include="Events\PromoteEvent.cpp">
       <Filter>Events</Filter>
     </ClCompile>
+    <ClCompile Include="Rest\Load.cpp" />
+    <ClCompile Include="Rest\Restaurant.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Rest\IDholder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMUgraphicsLib\Manual.txt">

@@ -120,8 +120,7 @@ void Restaurant::AddNormalCook(Cook* pC)
 	if (pC->GetType() == TYPE_NRM)
 	{
 		normalCooks.enqueue(pC);
-		IDholder* pID = new IDholder(pC->GetID(), pC->GetType());
-		availableCooks.InsertEnd(pID);
+		availableCooks.InsertEnd(pC);
 	} 
 }
 
@@ -130,8 +129,7 @@ void Restaurant::AddVeganCook(Cook* pC)
 	if (pC->GetType() == TYPE_VGAN)
 	{
 		veganCooks.enqueue(pC);
-		IDholder* pID = new IDholder(pC->GetID(), pC->GetType());
-		availableCooks.InsertEnd(pID);
+		availableCooks.InsertEnd(pC);
 	}
 }
 void Restaurant::AddVIPCook(Cook* pC)
@@ -139,8 +137,7 @@ void Restaurant::AddVIPCook(Cook* pC)
 	if (pC->GetType() == TYPE_VIP)
 	{
 		VIPCooks.enqueue(pC);
-		IDholder* pID = new IDholder(pC->GetID(), pC->GetType());
-		availableCooks.InsertEnd(pID);
+		availableCooks.InsertEnd(pC);
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -150,23 +147,20 @@ void Restaurant::AddVIPCook(Cook* pC)
 void Restaurant::AddtoNormalOrders(Order* po) {
 	normalOrders.InsertEnd(po);
 	NOrdersCount++; 
-	IDholder* pID = new IDholder(po->GetID(), po->GetType());
-	waitingOrders.InsertEnd(pID);
+	waitingOrders.InsertEnd(po);
 }
 
 void Restaurant::AddtoVeganOrders(Order* po) {
 	veganOrders.enqueue(po);
 	GOrdersCount++; 
 	veganInWait++; 
-	IDholder* pID = new IDholder(po->GetID(), po->GetType());
-	waitingOrders.InsertEnd(pID);
+	waitingOrders.InsertEnd(po);
 }
 
 void Restaurant::AddtoVIPOrders(Order* po) {
 	VIPOrders.InsertEnd(po);
 	VOrdersCount++; 
-	IDholder* pID = new IDholder(po->GetID(), po->GetType());
-	waitingOrders.InsertEnd(pID);
+	waitingOrders.InsertEnd(po);
 }
 
 void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
@@ -191,16 +185,17 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 
 void Restaurant::AddtoInserviceOrders(Order* po, int TimeStep)
 {
+	//Decrement vegan orders in wait counter
 	if (po->GetType() == TYPE_VGAN)
 		veganInWait--; 
+	//Set status to in-service 
+	po->setStatus(SRV); 
 	//Set servicing time 
 	po->setServTime(TimeStep); 
 	//In next phase use TimeStep + ceil of order's ndishes/ assigned cook's speed to set order's FinishTime here
 	//Inserts to list of inservice orders
 	inServiceOrders.InsertEnd(po);
-	//Removes from list of waiting orders
-	waitingOrders.DeleteNode(po->GetID(), 1); 
-
+	
 	//In next phase this function will be renamed AddtoInserviceOrdersCooks; will take both order and assigned cook; will set order FinishTime, CookFinishTime; will move cook to inservice cooks
 }
 
@@ -217,8 +212,8 @@ void Restaurant::AddEvent(Event* pEvent)
 
 
 void Restaurant::CancelNormalOrder(int id) {
-	if(normalOrders.DeleteNode(id))
-		waitingOrders.DeleteNode(id, 1); 
+	normalOrders.DeleteNode(id); 
+	waitingOrders.DeleteNode(id); 
 }
 
 void Restaurant::PromoteNormalOrder(int id, double extraMoney) {
@@ -229,9 +224,8 @@ void Restaurant::PromoteNormalOrder(int id, double extraMoney) {
 		Order* newVIP = new Order(oldNormal->getArrTime(), id, TYPE_VIP, oldNormal->getTotalMoney() + extraMoney, oldNormal->getNDishes());
 		VIPOrders.InsertEnd(newVIP);
 		//Change type in waiting orders list 
-		Node<IDholder*>* originalIDholderNode = waitingOrders.Return(id);
-		IDholder* newIDholder = new IDholder(id, TYPE_VIP);
-		originalIDholderNode->setItem(newIDholder);
+		Node<Order*>* originalOrderNode = waitingOrders.Return(id);
+		originalOrderNode->setItem(newVIP);
 	}
 
 }
@@ -244,13 +238,14 @@ void Restaurant::FillDrawingList()
 
 	//Initialize pointers to IDholder and Order 
 	Order* pOrd;
+	Cook* pCook; 
 	IDholder* pID;
 
 	//Add inservice orders from linked list of inservice orders 
 	Node<Order*>* P = inServiceOrders.getHead();
 	while (P) {
 		pOrd = P->getItem();
-		pGUI->AddToDrawingList(pOrd);
+		pGUI->AddToDrawingList(pOrd, SRV);
 		P = P->getNext();
 	};
 
@@ -258,24 +253,26 @@ void Restaurant::FillDrawingList()
 	Node<IDholder*>* D = finishedOrders.getHead();
 	while (D) {
 		pID = D->getItem();
-		pGUI->AddToDrawingList(pID, DONE);
+		pGUI->AddToDrawingList(pID);
 		D = D->getNext();
 	};
 
 	//Add waiting Orders 
-	D = waitingOrders.getHead();
-	while (D) {
-		pID = D->getItem();
-		pGUI->AddToDrawingList(pID, WAIT);
-		D = D->getNext();
+	P = waitingOrders.getHead();
+	while (P) {
+		pOrd = P->getItem();
+		if (pOrd)
+			if (pOrd -> getStatus() == WAIT)
+				pGUI->AddToDrawingList(pOrd, WAIT);
+		P = P->getNext();
 	};
 
 	//Add available cooks 
-	D = availableCooks.getHead();
-	while (D) {
-		pID = D->getItem();
-		pGUI->AddToDrawingList(pID);
-		D = D->getNext();
+	Node<Cook*>* C = availableCooks.getHead();
+	while (C) {
+		pCook = C->getItem();
+		pGUI->AddToDrawingList(pCook);
+		C = C->getNext();
 	};
 }
 
@@ -287,8 +284,15 @@ void Restaurant::modeInteractive()
 	int CurrentTimeStep = 1;
 	char timestep[10];
 
-	//Loop till all events are excueted and all orders are finished 
-	while (!EventsQueue.isEmpty() || waitingOrders.getHead() || inServiceOrders.getHead())
+	/* Loop till all events are excueted and all orders are finished:
+
+	The loop's condition checks that all events' have been excueted, no orders are in service, 
+	and no orders are in any of the waiting lists. The last check that no orders are in the 
+	waiting list is necassary for the case when all events are excueted and all cooks are in breaks,
+	hence although the waiting lists have are not empty, no orders are being serviced.
+
+	*/
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() ||veganInWait != 0 || VIPOrders.getHead())
 	{
 		//print current timestep
 		itoa(CurrentTimeStep, timestep, 10);
@@ -318,7 +322,7 @@ void Restaurant::modeStep()
 	char timestep[10];
 
 	//Loop till all events are excueted and all orders are finished 
-	while (!EventsQueue.isEmpty() || waitingOrders.getHead() || inServiceOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
 	{
 		//print current timestep
 		itoa(CurrentTimeStep, timestep, 10);
@@ -347,7 +351,7 @@ void Restaurant::modeSilent()
 	int CurrentTimeStep = 1;
 
 	//Loop till all events are excueted and all orders are finished 
-	while (!EventsQueue.isEmpty() || waitingOrders.getHead() || inServiceOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
 	{
 		//Excuete events in this time step
 		ExecuteEvents(CurrentTimeStep);

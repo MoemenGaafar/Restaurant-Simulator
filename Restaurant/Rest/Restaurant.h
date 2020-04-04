@@ -33,7 +33,7 @@ private:
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
 	LinkedList<Order*> VIPOrders; //Contains all unassigned VIP orders
 
-	LinkedList<IDholder*> waitingOrders; //Contains all waiting orders
+	LinkedList<Order*> waitingOrders; //Contains all waiting orders
 
 	int NOrdersCount = 0, GOrdersCount = 0, VOrdersCount = 0; //Number of added Normal, Vegan, and VIP orders 
 	int veganInWait = 0; //Number of vegan orders in waiting
@@ -48,7 +48,7 @@ private:
 
 	LinkedList<Cook*> inServiceCooks; //Contains all in-service Cooks
 
-	LinkedList<IDholder*> availableCooks; //Contains all available cooks
+	LinkedList<Cook*> availableCooks; //Contains all available cooks
 
 	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
 

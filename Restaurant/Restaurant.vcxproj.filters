@@ -120,9 +120,6 @@
     <ClInclude Include="Rest\Restaurant.h">
       <Filter>Rest</Filter>
     </ClInclude>
-    <ClInclude Include="Rest\IDholder.h">
-      <Filter>Rest</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMUgraphicsLib\jpeg\jcomapi.c">
@@ -254,7 +251,6 @@
     <ClCompile Include="Rest\Load.cpp" />
     <ClCompile Include="Rest\Restaurant.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Rest\IDholder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMUgraphicsLib\Manual.txt">

@@ -7,7 +7,7 @@
 #include "..\Rest\Order.h"
 
 #include "..\Rest\Cook.h"
-#include "..\Rest\IDholder.h"
+
 
 
 #include "..\Generic_DS\Queue.h"
@@ -119,8 +119,8 @@ public:
 
 	void UpdateInterface();
 	void AddToDrawingList(Order* pOrd, ORD_STATUS order_status );	//Adds a new waiting or inservice order to the drawing queue
-	void AddToDrawingList(IDholder* orderHolder); //Adds a new finished order to the drawing queue
 	void AddToDrawingList(Cook* pC);	//Adds a new cook to the drawing queue
+	void DrawFinishedOrder(Order* pOrd); //Draws a finished order
 	
 	void ResetDrawingList();		//resets drawing list (should be called every timestep after drawing)
 

@@ -59,8 +59,8 @@ void Restaurant::RunSimulation()
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
 	pGUI->PrintMessage(line6, 6, 0); 
-	Sleep(4000); 
-
+	pGUI->waitForClick();
+//	Sleep(8000); 
 }
 
 ///////////////////////////// RESTAURANT SETTERS AND GETTERS ///////////////////////
@@ -167,19 +167,18 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 
 	if (po)
 	{
+		finishedOrdersCount++;
 		//Adds finished order's service and waiting time to average services and waiting 
 		//times multiplied by number of previously finished orders
 		Avg_wait = Avg_wait * finishedOrdersCount +( double(po->getServTime()) - (double)po->getArrTime());
 		Avg_serv = Avg_serv * finishedOrdersCount + (double(TimeStep) - (double)po->getServTime());
 
-		//Adds finished order's ID and type to linked list of finished orders
-		IDholder* pID = new IDholder(po->GetID(), po->GetType());
-		finishedOrders.InsertEnd(pID);
-		finishedOrdersCount++;
+		pGUI->DrawFinishedOrder(po);
 
 		//Divides sum of average waiting and service times calculated above by new finished orders count
 		Avg_wait = Avg_wait / finishedOrdersCount;
 		Avg_serv = Avg_serv / finishedOrdersCount;
+		delete po;
 	}
 }
 
@@ -239,7 +238,6 @@ void Restaurant::FillDrawingList()
 	//Initialize pointers to IDholder and Order 
 	Order* pOrd;
 	Cook* pCook; 
-	IDholder* pID;
 
 	//Add inservice orders from linked list of inservice orders 
 	Node<Order*>* P = inServiceOrders.getHead();
@@ -247,14 +245,6 @@ void Restaurant::FillDrawingList()
 		pOrd = P->getItem();
 		pGUI->AddToDrawingList(pOrd, SRV);
 		P = P->getNext();
-	};
-
-	//Add finished orders  
-	Node<IDholder*>* D = finishedOrders.getHead();
-	while (D) {
-		pID = D->getItem();
-		pGUI->AddToDrawingList(pID);
-		D = D->getNext();
 	};
 
 	//Add waiting Orders 

@@ -415,16 +415,6 @@ public:
 		}
 	}
 
-	//Overloading this function to find and return an IDholder based on its ID
-	Node<IDholder*>* Return(int Key, bool isholder) {
-		Node<IDholder*>* P = Head;
-		while (P) {
-			if (P->getItem()->getID() == Key) {
-				return P; 
-			}
-			P = P->getNext();
-		}
-	}
 
 	//[12] DeleteAndReturnFirst
 	//Returns and deletes the first node in the list

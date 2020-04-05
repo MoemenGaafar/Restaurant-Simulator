@@ -105,7 +105,6 @@
     <ClInclude Include="Generic_DS\Queue.h" />
     <ClInclude Include="GUI\GUI.h" />
     <ClInclude Include="Rest\Cook.h" />
-    <ClInclude Include="Rest\IDholder.h" />
     <ClInclude Include="Rest\Load.h" />
     <ClInclude Include="Rest\Order.h" />
     <ClInclude Include="Rest\Restaurant.h" />
@@ -153,7 +152,6 @@
     <ClCompile Include="Events\PromoteEvent.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="Rest\Cook.cpp" />
-    <ClCompile Include="Rest\IDholder.cpp" />
     <ClCompile Include="Rest\Load.cpp" />
     <ClCompile Include="Rest\Order.cpp" />
     <ClCompile Include="Rest\Restaurant.cpp" />

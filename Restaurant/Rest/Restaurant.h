@@ -12,7 +12,6 @@
 #include <string>
 #include "Order.h"
 #include "Load.h"
-#include "IDholder.h" 
 
 
 
@@ -39,7 +38,6 @@ private:
 	int veganInWait = 0; //Number of vegan orders in waiting
 	LinkedList<Order*> inServiceOrders; //Contains all in-service orders
 
-	LinkedList<IDholder*> finishedOrders; //Contains IDs and types of all finished orders 
 	int finishedOrdersCount = 0;  //Number of finished orders 
 
 	Queue<Cook*> normalCooks; //Contains all available normal cooks

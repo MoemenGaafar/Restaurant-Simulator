@@ -11,8 +11,9 @@ GUI::GUI()
 	//Set color for each order type
 	DrawingColors[TYPE_NRM] =  RED;	//normal-order color
 	DrawingColors[TYPE_VGAN] = DARKBLUE;		//vegan-order color
-	DrawingColors[TYPE_VIP] = 	VIOLET;		//VIP-order color					
-
+	DrawingColors[TYPE_VIP] = 	VIOLET;		//VIP-order color			
+	pWind->SetBrush(KHAKI);
+	pWind->DrawRectangle(0, 0.5*(WindHeight - StatusBarHeight), 0.5*WindWidth, WindHeight - StatusBarHeight);
 	ClearStatusBar();
 	ClearDrawingArea(); 
 	DrawRestArea();  
@@ -97,7 +98,8 @@ void GUI::ClearDrawingArea() const
 	// Clearing the Drawing area
 	pWind->SetPen(KHAKI, 3);
 	pWind->SetBrush(KHAKI);
-	pWind->DrawRectangle(0, MenuBarHeight, WindWidth, WindHeight - StatusBarHeight);
+	pWind->DrawRectangle(0, 0, WindWidth, 0.5* (WindHeight - StatusBarHeight));
+	pWind->DrawRectangle(0.5 * WindWidth, 0.5 * (WindHeight - StatusBarHeight), WindWidth, WindHeight - StatusBarHeight);
 }
 ///////////////////////////////////////////////////////////////////////////////////
 void GUI::DrawRestArea() const
@@ -249,17 +251,35 @@ void GUI::AddToDrawingList(Order* pOrd, ORD_STATUS order_status)
 	pDitem->region = reg;
 
 	DrawingList[DrawingItemsCount++] = pDitem;
-
 }
 
 //Adds waiting and finished orders 
-void GUI::AddToDrawingList(IDholder* orderHolder)
+void GUI::DrawFinishedOrder(Order* pOrd)
 {
-	DrawingItem* pDitem = new DrawingItem;
-	pDitem->ID = orderHolder->getID();
-	pDitem->clr = DrawingColors[orderHolder->getHolderType()];
-	pDitem->region = DONE_REG;
-	DrawingList[DrawingItemsCount++] = pDitem;
+	static int orderNum = 1;
+
+	if (orderNum > MaxRegionOrderCount)
+		return; //no more items can be drawn in this region
+
+	int DrawDistance = orderNum;
+	int YPos = 1;
+	if (orderNum >= MaxHorizOrders)	//max no. of orders to draw in one line
+	{
+		DrawDistance = (orderNum - 1) % MaxHorizOrders + 1;
+		YPos = (orderNum - 1) / MaxHorizOrders + 1;
+	}
+
+	//First calculate x,y position of the order on the output screen
+	int refX = (WindWidth / 2 - RestWidth / 2);
+	int refY = YHalfDrawingArea + OrderHeight; //
+	int x = refX - DrawDistance * OrderWidth - DrawDistance; //(Distance)
+	int y = refY + (YPos - 1) * OrderHeight + YPos; // YPos
+
+	// Drawing the item
+	pWind->SetPen(DrawingColors[pOrd->GetType()]);
+	pWind->SetFont(20, BOLD, MODERN);
+	pWind->DrawInteger(x, y, pOrd->GetID());
+	orderNum++;
 }
 
 //Adds available cooks 

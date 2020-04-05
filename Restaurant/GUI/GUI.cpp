@@ -60,12 +60,15 @@ string GUI::GetString() const
 
 void GUI::PrintMessage(string msg, int line, bool erase ) const	//Prints a message on status bar
 {
+	if (line > 7)
+		return; 
+
 	if (erase)
 		ClearStatusBar();	//First clear the status bar
 
 	pWind->SetPen(DARKRED);
 	pWind->SetFont(18, BOLD, BY_NAME, "Arial");
-	pWind->DrawString(10, WindHeight - (int)(StatusBarHeight) + line*15, msg);
+	pWind->DrawString(10, WindHeight - (int)(StatusBarHeight) + line*17, msg);
 	
 	
 
@@ -117,12 +120,12 @@ void GUI::DrawRestArea() const
 	pWind->DrawLine(WindWidth/2 - RestWidth/2, YHalfDrawingArea, WindWidth/2 + RestWidth/2, YHalfDrawingArea);
 
 	// 4- Drawing the 4 white squares inside the Rest (one for each region)
-	//pWind->SetPen(WHITE);
-	//pWind->SetBrush(WHITE);
-	//pWind->DrawRectangle(RestStartX , RestStartY , RestStartX + 2*L/2, RestStartY + 2*L/2);
-	//pWind->DrawRectangle(RestStartX + L/3, RestEndY - L/3, RestStartX + 2*L/3, RestEndY - 2*L/3);
-	//pWind->DrawRectangle(RestEndX - 2*L/3, RestStartY + L/3, RestEndX - L/3, RestStartY + 2*L/3);
-	//pWind->DrawRectangle(RestEndX - 2*L/3, RestEndY - L/3, RestEndX - L/3, RestEndY - 2*L/3);
+	/*pWind->SetPen(WHITE);
+	pWind->SetBrush(WHITE);
+	pWind->DrawRectangle(RestStartX , RestStartY , RestStartX + 2*L/2, RestStartY + 2*L/2);
+	pWind->DrawRectangle(RestStartX + L/3, RestEndY - L/3, RestStartX + 2*L/3, RestEndY - 2*L/3);
+	pWind->DrawRectangle(RestEndX - 2*L/3, RestStartY + L/3, RestEndX - L/3, RestStartY + 2*L/3);
+	pWind->DrawRectangle(RestEndX - 2*L/3, RestEndY - L/3, RestEndX - L/3, RestEndY - 2*L/3);*/
 
 	// 5- Writing regions labels
 	pWind->SetPen(WHITE);
@@ -224,40 +227,49 @@ void GUI::UpdateInterface()
 /*
 	AddOrderForDrawing: Adds a new item related to the passed Order to the drawing list
 */
+//Adds inservice orders 
 void GUI::AddToDrawingList(Order* pOrd)
 {
-	
 	DrawingItem *pDitem=new DrawingItem;
 	pDitem->ID = pOrd->GetID();
 	pDitem->clr = DrawingColors[pOrd->GetType()];
-	ORD_STATUS order_status = pOrd->getStatus();
+	pDitem->region = SRV_REG;	
+	DrawingList[DrawingItemsCount++]=pDitem;
+
+} 
+
+//Adds waiting and finished orders 
+void GUI::AddToDrawingList(IDholder* orderHolder, ORD_STATUS status)
+{
+	DrawingItem* pDitem = new DrawingItem;
+	pDitem->ID = orderHolder->getID();
+	pDitem->clr = DrawingColors[orderHolder->getHolderType()];
+	
 	GUI_REGION reg;
 
-	switch (order_status)
+	switch (status)
 	{
 	case WAIT:
 		reg = ORD_REG;	//region of waiting orders
-		break;
-	case SRV:
-		reg = SRV_REG;	//region of waiting orders
 		break;
 	case DONE:
 		reg = DONE_REG;	//region of waiting orders
 		break;
 	}
 
-	pDitem->region =reg;
-	
-	DrawingList[DrawingItemsCount++]=pDitem;
+	pDitem->region = reg; 
 
+
+	DrawingList[DrawingItemsCount++] = pDitem;
 }
 
-void GUI::AddToDrawingList(Cook* pC)
+//Adds available cooks 
+void GUI::AddToDrawingList(IDholder* cookHolder)
 {
 	
 	DrawingItem *pDitem=new DrawingItem;
-	pDitem->ID = pC->GetID();
-	pDitem->clr = DrawingColors[pC->GetType()];
+	pDitem->ID = cookHolder->getID();
+	pDitem->clr = DrawingColors[cookHolder->getHolderType()];
 	pDitem->region = COOK_REG;
 	
 	DrawingList[DrawingItemsCount++]=pDitem;
@@ -280,7 +292,7 @@ PROG_MODE	GUI::getGUIMode() const
 	PROG_MODE Mode;
 	do
 	{
-		PrintMessage("Please select GUI mode: (1)Interactive, (2)StepByStep, (3)Silent, (4)DEMO... ");
+		PrintMessage("Select GUI mode: (1)Interactive, (2)StepByStep, (3)Silent ");
 		string S = GetString();
 		Mode = (PROG_MODE) (atoi(S.c_str())-1);
 	}

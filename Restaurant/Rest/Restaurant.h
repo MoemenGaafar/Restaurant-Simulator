@@ -9,77 +9,112 @@
 #include "..\Events\ArrivalEvent.h"
 #include "..\Events\CancelEvent.h"
 #include "..\Events\PromoteEvent.h"
-#include<fstream>
-#include<string>
+#include <string>
 #include "Order.h"
+#include "Load.h"
+#include "IDholder.h" 
 
-// it is the maestro of the project
-class Restaurant  
-{	
+
+
+// This is the maestro of the project
+class Restaurant
+{
 private:
-	GUI *pGUI;
+	GUI* pGUI; //Pointer to user interface 
+	PROG_MODE mode; 
 	Queue<Event*> EventsQueue;	//Queue of all events that will be loaded from file
-	PROG_MODE mode;
-	int Auto_p;
+	Load* pLoad = new Load(this);
+	int Auto_p; // Waiting time counts before a Normal gets promoted to VIP for no extra charge 
+	int Auto_promoted_count = 0; //Number of normal orders to get auto-promoted to VIP
+	double Avg_wait = 0, Avg_serv = 0; //Average waiting and service times of finished orders 
+
+		
 	///Phase 1 members///
 	LinkedList<Order*> normalOrders; //Contains all unassigned Normal orders
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
 	LinkedList<Order*> VIPOrders; //Contains all unassigned VIP orders
+
+	LinkedList<IDholder*> waitingOrders; //Contains all waiting orders
+
+	int NOrdersCount = 0, GOrdersCount = 0, VOrdersCount = 0; //Number of added Normal, Vegan, and VIP orders 
+	int veganInWait = 0; //Number of vegan orders in waiting
 	LinkedList<Order*> inServiceOrders; //Contains all in-service orders
+
+	LinkedList<IDholder*> finishedOrders; //Contains IDs and types of all finished orders 
+	int finishedOrdersCount = 0;  //Number of finished orders 
+
 	Queue<Cook*> normalCooks; //Contains all available normal cooks
 	Queue<Cook*> veganCooks; //Contains all availabe vegan cooks
-	Queue<Cook*> VIPCooks; //Contains all availabe normal cooks
+	Queue<Cook*> VIPCooks; //Contains all availabe VIP cooks 
+
+	LinkedList<Cook*> inServiceCooks; //Contains all in-service Cooks
+
+	LinkedList<IDholder*> availableCooks; //Contains all available cooks
+
+	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
+
 	LinkedList<Cook*> busyCooks; //Contains cooks working on orders
 	Queue<Cook*> inBreakCooks; //Contains cooks taking breaks
-	//////////////////////
-
-	
-	/// ==> 
-	//	DEMO-related members. Should be removed in phases 1&2
-	Queue<Order*> DEMO_Queue;	//Important: This is just for demo
-	/// ==>
 	
 	
-	
-	//
-	// TODO: Add More Data Members As Needed
-	//
 
 public:
-	
+
 	Restaurant();
 	~Restaurant();
+
+	void RunSimulation(); //Starts simulation, loads events file, calls a simulation mode function 
+
+	//Basic setters and getters 
 	void setAuto_p(int p);
 	int getAuto_p();
-	void FileLoading();
-	void ExecuteEvents(int TimeStep);	//executes all events at current timestep
-	void RunSimulation();
-	void FillDrawingList();
-	PROG_MODE getMode();
+	void setCooksCount(int n, int g, int v); 
+	int getNCooksCount(); 
+	int getGCooksCount();
+	int getVCooksCount();
+	GUI* GetGUI(); //Returns a pointer to restaurant's GUI
+	PROG_MODE getMode(); 
 
-/// ===================    Phase 1 Simulation functions.  ================= 
-	void Phase1Simulator(); //Main Simulator Function
+	ORD_TYPE typeFinder(int key); //Returns the type of the order ID	
+	
 
-	//Three functions that add to the corresponding list of orders
+	//Functions that add to the corresponding queues of cooks 
+	void AddNormalCook(Cook* pC);
+	void AddVeganCook(Cook* pC);
+	void AddVIPCook(Cook* pC);
+
+
+	//Functions that add to the corresponding list of orders
 	void AddtoNormalOrders(Order* po);
 	void AddtoVeganOrders(Order* po);
 	void AddtoVIPOrders(Order* po);
 
-	ORD_TYPE typeFinder(int key); //Returns the type of the order ID
+	//Functions that add orders/cooks to inservice and finished/ inservice and available lists 
+	void AddtoFinishedOrders(Order* po, int TimeStep); 
+	void AddtoInserviceOrders(Order* po, int TimeStep); 
+
+	
+	void AddEvent(Event* pEvent); //Adds events to events queue 
 	void CancelNormalOrder(int id); //Cancels a normal order using its ID
 	void PromoteNormalOrder(int id, double extraMoney); //Promotes a normal order using its ID
-/// ================================================================================================== 
+ 
 
+	// Adds cooks and orders to GUI drawing list 
+	void FillDrawingList();
 
-/// ===================    DEMO-related functions. Should be removed in phases 1&2   ================= 
+	// Functions to run simulation modes 
+	void modeInteractive(); 
+	void modeStep(); 
+	void modeSilent(); 
 
-	void Just_A_Demo();	//just to show a demo and should be removed in phase1 1 & 2
-	void AddtoDemoQueue(Order* po);	//adds an order to the demo queue
-
-/// ================================================================================================== 
-
+	// Functions to excuete simulation actions in current timestep
+	void ExecuteEvents(int TimeStep);	//Executes all events at current timestep
+	void AssignOrders(int TimeStep);  //Moves waiting orders to inservice orders 
+	void ServeOrders(int TimeStep); //Moves inservice orders to finished orders
+	void Statusbar(); //Updates information on status bar
 
 
 };
 
 #endif
+

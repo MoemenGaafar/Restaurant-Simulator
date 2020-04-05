@@ -59,8 +59,7 @@ void Restaurant::RunSimulation()
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
 	pGUI->PrintMessage(line6, 6, 0); 
-	pGUI->waitForClick();
-//	Sleep(8000); 
+	Sleep(4500); 
 }
 
 ///////////////////////////// RESTAURANT SETTERS AND GETTERS ///////////////////////
@@ -167,13 +166,17 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 
 	if (po)
 	{
-		finishedOrdersCount++;
+		
 		//Adds finished order's service and waiting time to average services and waiting 
 		//times multiplied by number of previously finished orders
 		Avg_wait = Avg_wait * finishedOrdersCount +( double(po->getServTime()) - (double)po->getArrTime());
 		Avg_serv = Avg_serv * finishedOrdersCount + (double(TimeStep) - (double)po->getServTime());
 
+		//Draw teh finished order
 		pGUI->DrawFinishedOrder(po);
+
+		//Increment the finished orders count
+		finishedOrdersCount++;
 
 		//Divides sum of average waiting and service times calculated above by new finished orders count
 		Avg_wait = Avg_wait / finishedOrdersCount;
@@ -211,8 +214,10 @@ void Restaurant::AddEvent(Event* pEvent)
 
 
 void Restaurant::CancelNormalOrder(int id) {
-	normalOrders.DeleteNode(id); 
-	waitingOrders.DeleteNode(id); 
+	Node <Order*>* pNode = normalOrders.Return(id); 
+	Order* pOrd = pNode->getItem(); 
+	normalOrders.DeleteNode(id);
+	delete pOrd; 
 }
 
 void Restaurant::PromoteNormalOrder(int id, double extraMoney) {
@@ -251,9 +256,8 @@ void Restaurant::FillDrawingList()
 	P = waitingOrders.getHead();
 	while (P) {
 		pOrd = P->getItem();
-		if (pOrd)
-			if (pOrd -> getStatus() == WAIT)
-				pGUI->AddToDrawingList(pOrd, WAIT);
+		if (pOrd -> getStatus() == WAIT && pOrd -> GetID() > 0)
+			pGUI->AddToDrawingList(pOrd, WAIT);
 		P = P->getNext();
 	};
 

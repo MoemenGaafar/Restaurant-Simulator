@@ -239,30 +239,6 @@ public:
 		return false;
 	}
 
-	//Overriding this function to delete an IDholder using its ID
-	bool DeleteNode(int value, bool idholder) {
-		Node<IDholder*>* P = Head;
-		Node<IDholder*>* R;
-		while (P) {
-			if (P->getItem()->getID() == value) {
-				if (P == Head) {
-					DeleteFirst(); return true;
-				}
-				else {
-					if (P == Tail)
-						Tail = R;
-					R->setNext(P->getNext());
-					delete P;
-					count--;
-					return true;
-				}
-			}
-			R = P;
-			P = P->getNext();
-		}
-		return false;
-	}
-
 	//[7] DeleteNodes
 	//deletes ALL node with the given value (if found) and returns true
 	//if not found, returns false

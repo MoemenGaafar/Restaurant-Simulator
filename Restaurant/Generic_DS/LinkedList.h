@@ -8,7 +8,7 @@ class LinkedList
 {
 private:
 	Node<T> *Head;	//Pointer to the head of the list
-	//You can add tail pointer too (depending on your problem)
+	Node<T> *Tail;  //Pointer to the tail of the list 
 	int count;	//Number of nodes in the list
 public:
 
@@ -17,6 +17,7 @@ public:
 	{
 		count = 0;
 		Head = nullptr;
+		Tail = nullptr; 
 	}
 
 	//List is being desturcted ==> delete all items in the list
@@ -28,6 +29,18 @@ public:
 
 	Node<T>* getHead() const {
 		return Head;
+	}
+
+	Node<T>* getTail() const {
+		return Tail;
+	}
+
+	void setHead(Node<T>* h) {
+		Head = h; 
+	}
+
+	void setTail(Node<T>* t) {
+		Tail = t;
 	}
 
 	int getCount() const {
@@ -65,6 +78,8 @@ public:
 	void InsertBeg(const T &data)
 	{
 		Node<T> *R = new Node<T>(data);
+		if (!Head)
+			Tail = R; 
 		R->setNext(Head);
 		Head = R;
 		count++;
@@ -95,16 +110,13 @@ public:
 
 
 	//[1]InsertEnd 
-	//inserts a new node at end if the list
+	//inserts a new node at end of the list
 	void InsertEnd(const T &data) {
 		Node<T> *R = new Node<T>(data);
 		R->setNext(nullptr);
-		Node<T> *P = Head;
-		if (P) {
-			while (P->getNext()) {
-				P = P->getNext();
-			}
-			P->setNext(R);
+		if (Tail) {
+			Tail->setNext(R);
+			Tail = R; 
 			count++;
 		}
 		else
@@ -150,6 +162,8 @@ public:
 	void DeleteFirst() {
 		Node<T> *P = Head;
 		if (P) {
+			if (P == Tail)
+				Tail = nullptr; 
 			Head = P->getNext();
 			delete P;
 			count--;
@@ -167,6 +181,7 @@ public:
 			}
 			Node<T> *R = P->getNext();
 			delete R;
+			Tail = P;
 			P->setNext(nullptr);
 			count--;
 		}
@@ -182,9 +197,12 @@ public:
 		while (P) {
 			if (P->getItem() == value) {
 				if (P == Head) {
-					DeleteFirst(); return true;
+					DeleteFirst(); 
+					return true;
 				}
 				else {
+					if (P == Tail)
+						Tail = R; 
 					R->setNext(P->getNext());
 					delete P;
 					count--;
@@ -207,6 +225,8 @@ public:
 					DeleteFirst(); return true;
 				}
 				else {
+					if (P == Tail)
+						Tail = R;
 					R->setNext(P->getNext());
 					delete P;
 					count--;
@@ -229,6 +249,8 @@ public:
 					DeleteFirst(); return true;
 				}
 				else {
+					if (P == Tail)
+						Tail = R;
 					R->setNext(P->getNext());
 					delete P;
 					count--;
@@ -255,6 +277,8 @@ public:
 		}
 		while (P && P->getNext()) {
 			if (P->getNext()->getItem() == value) {
+				if (P->getNext() == Tail)
+					Tail = P; 
 				Node<T>* R = P->getNext();
 				P->setNext(R->getNext());
 				delete R;
@@ -271,22 +295,10 @@ public:
 	//[8]Merge
 	//Merges the current list to another list L by making the last Node in the current list 
 	//point to the first Node in list L
-	
-
 	void Merge(const LinkedList& L) {
-		Node<T>* P = Head;
-		while (P->getNext()) {
-			P = P->getNext();
-		}
-		Node<T>* LNode = L.getHead();
-		T NodeVal;
-			while (LNode) {
-				NodeVal = LNode->getItem();
-				Node<T>* Q = new Node<T>(NodeVal);
-				P->setNext(Q);
-				P = P->getNext();
-				LNode = LNode->getNext();
-			}
+		
+		Tail->setNext(L.Head()); 
+		Tail = L.Tail(); 
 		count = count + L.getCount();
 	}
 	
@@ -316,8 +328,12 @@ public:
 			if (P->getItem() == Key) {
 				if (P == Head) {
 					Head = P->getNext();
+					if (P == Tail)
+						Tail = nullptr; 
 				}
 				else {
+					if (P == Tail)
+						Tail = R; 
 					R->setNext(P->getNext());
 				}
 				count--;
@@ -336,8 +352,12 @@ public:
 			if (P->getItem()->GetID() == Key) {
 				if (P == Head) {
 					Head = P->getNext();
+					if (P == Tail)
+						Tail = nullptr;
 				}
 				else {
+					if (P == Tail)
+						Tail = R; 
 					R->setNext(P->getNext());
 				}
 				count--;
@@ -356,8 +376,12 @@ public:
 			if (P->getItem()->GetType() == Key) {
 				if (P == Head) {
 					Head = P->getNext();
+					if (P == Tail)
+						Tail = nullptr;
 				}
 				else {
+					if (P == Tail)
+						Tail = R; 
 					R->setNext(P->getNext());
 				}
 				count--;
@@ -381,7 +405,18 @@ public:
 	}
 
 	//Overloading this function to find and return an order based on its ID
-	Node<IDholder*>* Return(int Key) {
+	Node<Order*>* Return(int Key) {
+		Node<Order*>* P = Head;
+		while (P) {
+			if (P->getItem()->GetID() == Key) {
+				return P;
+			}
+			P = P->getNext();
+		}
+	}
+
+	//Overloading this function to find and return an IDholder based on its ID
+	Node<IDholder*>* Return(int Key, bool isholder) {
 		Node<IDholder*>* P = Head;
 		while (P) {
 			if (P->getItem()->getID() == Key) {
@@ -398,6 +433,8 @@ public:
 		if (Head) {
 			Node<T>* P = Head;
 			Head = P->getNext();
+			if (P == Tail)
+				Tail = nullptr;
 			count--;
 			return P->getItem(); 
 			
@@ -427,12 +464,17 @@ public:
 			{
 				Head = Largest->getNext(); 
 				count--;
+				if (Largest == Tail)
+					Tail = nullptr; 
 			}
 			else
 			{
+				if (Largest == Tail)
+					Tail = Previous;
 				Previous->setNext(Largest->getNext());
 				count--;
 			}
+			
 
 			return Largest->getItem();
 		}
@@ -460,9 +502,13 @@ public:
 			{
 				Head = Largest->getNext(); 
 				count--; 
+				if (Largest == Tail)
+					Tail = nullptr;
 			}
 			else
 			{
+				if (Largest == Tail)
+					Tail = Previous; 
 				Previous->setNext(Largest->getNext());
 				count--;
 			}

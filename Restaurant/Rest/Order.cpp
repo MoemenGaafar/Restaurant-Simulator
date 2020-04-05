@@ -5,7 +5,7 @@ Order::Order(int arrivalTime, int id, ORD_TYPE ordType, double money, int dishes
 	ID = (id>0&&id<1000)?id:0;	//1<ID<999
 	type = ordType;
 	totalMoney = money;
-	//status = WAIT;
+	status = WAIT;
 	nDishes = dishes;
 	ArrTime = arrivalTime;
 
@@ -31,15 +31,15 @@ ORD_TYPE Order::GetType() const
 }
 
 
-//void Order::setStatus(ORD_STATUS s)
-//{
-//	status = s;
-//}
-//
-//ORD_STATUS Order::getStatus() const
-//{
-//	return status;
-//}
+void Order::setStatus(ORD_STATUS s)
+{
+	status = s;
+}
+
+ORD_STATUS Order::getStatus() const
+{
+	return status;
+}
 
 void Order::setPriority(double pr) {
 	priority = pr;

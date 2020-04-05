@@ -227,52 +227,51 @@ void GUI::UpdateInterface()
 /*
 	AddOrderForDrawing: Adds a new item related to the passed Order to the drawing list
 */
-//Adds inservice orders 
-void GUI::AddToDrawingList(Order* pOrd)
+//Adds waiting and inservice orders 
+void GUI::AddToDrawingList(Order* pOrd, ORD_STATUS order_status)
 {
-	DrawingItem *pDitem=new DrawingItem;
+
+	DrawingItem* pDitem = new DrawingItem;
 	pDitem->ID = pOrd->GetID();
 	pDitem->clr = DrawingColors[pOrd->GetType()];
-	pDitem->region = SRV_REG;	
-	DrawingList[DrawingItemsCount++]=pDitem;
-
-} 
-
-//Adds waiting and finished orders 
-void GUI::AddToDrawingList(IDholder* orderHolder, ORD_STATUS status)
-{
-	DrawingItem* pDitem = new DrawingItem;
-	pDitem->ID = orderHolder->getID();
-	pDitem->clr = DrawingColors[orderHolder->getHolderType()];
-	
 	GUI_REGION reg;
 
-	switch (status)
+	switch (order_status)
 	{
 	case WAIT:
 		reg = ORD_REG;	//region of waiting orders
 		break;
-	case DONE:
-		reg = DONE_REG;	//region of waiting orders
+	case SRV:
+		reg = SRV_REG;	//region of waiting orders
 		break;
 	}
 
-	pDitem->region = reg; 
+	pDitem->region = reg;
 
+	DrawingList[DrawingItemsCount++] = pDitem;
 
+}
+
+//Adds waiting and finished orders 
+void GUI::AddToDrawingList(IDholder* orderHolder)
+{
+	DrawingItem* pDitem = new DrawingItem;
+	pDitem->ID = orderHolder->getID();
+	pDitem->clr = DrawingColors[orderHolder->getHolderType()];
+	pDitem->region = DONE_REG;
 	DrawingList[DrawingItemsCount++] = pDitem;
 }
 
 //Adds available cooks 
-void GUI::AddToDrawingList(IDholder* cookHolder)
+void GUI::AddToDrawingList(Cook* pC)
 {
-	
-	DrawingItem *pDitem=new DrawingItem;
-	pDitem->ID = cookHolder->getID();
-	pDitem->clr = DrawingColors[cookHolder->getHolderType()];
+
+	DrawingItem* pDitem = new DrawingItem;
+	pDitem->ID = pC->GetID();
+	pDitem->clr = DrawingColors[pC->GetType()];
 	pDitem->region = COOK_REG;
-	
-	DrawingList[DrawingItemsCount++]=pDitem;
+
+	DrawingList[DrawingItemsCount++] = pDitem;
 
 }
 

@@ -29,12 +29,11 @@ private:
 	double Avg_wait = 0, Avg_serv = 0; //Average waiting and service times of finished orders 
 
 		
-	///Phase 1 members///
 	LinkedList<Order*> normalOrders; //Contains all unassigned Normal orders
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
 	LinkedList<Order*> VIPOrders; //Contains all unassigned VIP orders
 
-	LinkedList<IDholder*> waitingOrders; //Contains all waiting orders
+	LinkedList<Order*> waitingOrders; //Contains all waiting orders
 
 	int NOrdersCount = 0, GOrdersCount = 0, VOrdersCount = 0; //Number of added Normal, Vegan, and VIP orders 
 	int veganInWait = 0; //Number of vegan orders in waiting
@@ -49,11 +48,10 @@ private:
 
 	LinkedList<Cook*> inServiceCooks; //Contains all in-service Cooks
 
-	LinkedList<IDholder*> availableCooks; //Contains all available cooks
+	LinkedList<Cook*> availableCooks; //Contains all available cooks
 
 	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
 
-	LinkedList<Cook*> busyCooks; //Contains cooks working on orders
 	Queue<Cook*> inBreakCooks; //Contains cooks taking breaks
 	
 	

@@ -172,8 +172,9 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 		Avg_wait = Avg_wait * finishedOrdersCount +( double(po->getServTime()) - (double)po->getArrTime());
 		Avg_serv = Avg_serv * finishedOrdersCount + (double(TimeStep) - (double)po->getServTime());
 
-		//Draw teh finished order
-		pGUI->DrawFinishedOrder(po);
+		//Draw the finished order
+		if (mode != MODE_SLNT)
+			pGUI->DrawFinishedOrder(po);
 
 		//Increment the finished orders count
 		finishedOrdersCount++;

@@ -472,15 +472,6 @@ void Restaurant::AssignOrders(int TimeStep)
 		line6 += "G" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
 		availableGCooks--;
 	}
-	//Assign normal orders to available normal cooks
-	while (normalOrders.getHead() && !normalCooks.isEmpty())
-	{
-		pOrd = normalOrders.DeleteAndReturnFirst();
-		normalCooks.dequeue(pCook);
-		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
-		line6 += "N" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
-		availableNCooks--;
-	} 
 	//Assign vegan orders to available vegan cooks
 	while (!veganOrders.isEmpty() && !veganCooks.isEmpty())
 	{
@@ -490,6 +481,15 @@ void Restaurant::AssignOrders(int TimeStep)
 		line6 += "G" + to_string(pCook->GetID()) + "(G" + to_string(pOrd->GetID()) + ") ";
 		availableGCooks--;
 	}
+	//Assign normal orders to available normal cooks
+	while (normalOrders.getHead() && !normalCooks.isEmpty())
+	{
+		pOrd = normalOrders.DeleteAndReturnFirst();
+		normalCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "N" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
+		availableNCooks--;
+	} 
 	//If there are still normal orders, assign VIP cooks to them
 	while (normalOrders.getHead() && !VIPCooks.isEmpty()) {
 		pOrd = normalOrders.DeleteAndReturnFirst();

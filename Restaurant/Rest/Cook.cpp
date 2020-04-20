@@ -2,15 +2,16 @@
 
 
 Cook::Cook()
+	: nOrdersUntilBreak(0), breakDuration(0)
 {
 }
 
-Cook::Cook(int id, ORD_TYPE inputType, int inputSpeed, int inputNDishesUntilBreak, int inputBreakDuration) {
+Cook::Cook(int id, ORD_TYPE inputType, int inputSpeed, int inputNOrdersUntilBreak, int inputBreakDuration) 
+	: nOrdersUntilBreak(inputNOrdersUntilBreak), breakDuration (inputBreakDuration) {
 	ID = id; 
 	type = inputType;
 	speed = inputSpeed;
-	nDishesUntilBreak = inputNDishesUntilBreak;
-	breakDuration = inputBreakDuration;
+	ordersLeftUntilBreak = inputNOrdersUntilBreak;
 }
 
 Cook::~Cook()
@@ -46,6 +47,26 @@ int Cook::getFinishTime() const {
 
 void Cook::setFinishTime(int t) {
 	FinishTime = t;
+}
+
+int Cook::getSpeed() {
+	return speed;
+}
+
+void Cook::minusOrdersTillBreak() {
+	ordersLeftUntilBreak--;
+}
+
+int Cook::getOrdersTillBreak() {
+	return ordersLeftUntilBreak;
+}
+
+const int Cook::getBreakDuration() {
+	return breakDuration;
+}
+
+void Cook::resetOrderstillBreak() {
+	ordersLeftUntilBreak = nOrdersUntilBreak;
 }
 
 

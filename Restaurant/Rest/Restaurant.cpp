@@ -28,6 +28,9 @@ void Restaurant::RunSimulation()
 	pLoad->Excuete(); //Takes event file from user and loads it into restaurant
 	Sleep(1500);
 	mode = pGUI->getGUIMode();
+	availableNCooks = NCooksCount;
+	availableGCooks = GCooksCount;
+	availableVCooks = VCooksCount;
 
 	switch (mode)	
 	{
@@ -182,25 +185,66 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 		//Divides sum of average waiting and service times calculated above by new finished orders count
 		Avg_wait = Avg_wait / finishedOrdersCount;
 		Avg_serv = Avg_serv / finishedOrdersCount;
+
+		//Increment served orders counters
+		switch (po->GetType()) {
+		case TYPE_NRM: doneNOrders++; break;
+		case TYPE_VGAN: doneGOrders++; break;
+		case TYPE_VIP: doneVOrders++; break;
+		}
 		delete po;
 	}
 }
 
-void Restaurant::AddtoInserviceOrders(Order* po, int TimeStep)
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////  COOKS FUNCTIONS  /////////////////////////////////////
+
+void Restaurant::AddtoInserviceOrdersCooks(Order* po, Cook* pc, int TimeStep)
 {
+	//ORDER
 	//Decrement vegan orders in wait counter
 	if (po->GetType() == TYPE_VGAN)
 		veganInWait--; 
 	//Set status to in-service 
 	po->setStatus(SRV); 
-	//Set servicing time 
+	//Set servicing time
 	po->setServTime(TimeStep); 
-	//In next phase use TimeStep + ceil of order's ndishes/ assigned cook's speed to set order's FinishTime here
-	//Inserts to list of inservice orders
+	//Calculate order finish time
+	int finishtime = TimeStep + ceil(po->getNDishes() / (double)pc->getSpeed());
+	//Set order finish time
+	po->setFinishTime(finishtime);
+
+	//COOK
+	//Decrement the ordersTillBreak counter of the cook by one
+	pc->minusOrdersTillBreak();
+	//Check if the cook requires a break after the order and add it to the cook's finish time
+	if (pc->getOrdersTillBreak() == 0) finishtime += pc->getBreakDuration();
+	//Set the cook's finish time
+	pc->setFinishTime(finishtime);
+	//Remove the cook from the drawing list
+	availableCooks.DeleteNode(*pc);
+
+	//Insert to list of inservice orders and idle cooks
 	inServiceOrders.InsertEnd(po);
+	idleCooks.InsertEnd(pc);
 	
-	//In next phase this function will be renamed AddtoInserviceOrdersCooks; will take both order and assigned cook; will set order FinishTime, CookFinishTime; will move cook to inservice cooks
 }
+
+void Restaurant::ReturntoAvailableCooks(Cook* pc) {
+	//If the cook is returning from a break, reset his ordersTillBreak counter
+	if (pc->getOrdersTillBreak() == 0) pc->resetOrderstillBreak();
+	//Return cook to the availableCooks list
+	availableCooks.InsertEnd(pc);
+	//Increment the counters of available cooks
+	switch (pc->GetType()) {
+	case TYPE_NRM: normalCooks.enqueue(pc); availableNCooks++; break;
+	case TYPE_VGAN: veganCooks.enqueue(pc); availableGCooks++; break;
+	case TYPE_VIP: VIPCooks.enqueue(pc); availableVCooks++;
+	}
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -287,7 +331,7 @@ void Restaurant::modeInteractive()
 	hence although the waiting lists have are not empty, no orders are being serviced.
 
 	*/
-	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() ||veganInWait != 0 || VIPOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
 	{
 		//print current timestep
 		itoa(CurrentTimeStep, timestep, 10);
@@ -296,6 +340,8 @@ void Restaurant::modeInteractive()
 		ExecuteEvents(CurrentTimeStep);
 		//Serve Orders
 		ServeOrders(CurrentTimeStep);
+		//Return Available Cooks
+		FreeCooks(CurrentTimeStep);
 		//Assign Orders
 		AssignOrders(CurrentTimeStep);
 		//Update GUI
@@ -326,6 +372,8 @@ void Restaurant::modeStep()
 		ExecuteEvents(CurrentTimeStep);
 		//Serve Orders
 		ServeOrders(CurrentTimeStep);
+		//Return Available Cooks
+		FreeCooks(CurrentTimeStep);
 		//Assign Orders
 		AssignOrders(CurrentTimeStep);
 		//Update GUI
@@ -352,6 +400,8 @@ void Restaurant::modeSilent()
 		ExecuteEvents(CurrentTimeStep);
 		//Assign Orders
 		AssignOrders(CurrentTimeStep); 
+		//Return Available Cooks
+		FreeCooks(CurrentTimeStep);
 		//Serve Orders
 		ServeOrders(CurrentTimeStep); 
 		//Advance timestep
@@ -384,6 +434,7 @@ void Restaurant::ExecuteEvents(int CurrentTimeStep)
 void Restaurant::AssignOrders(int TimeStep)
 {
 	Order* pOrd; 
+	Cook* pCook;
 	//Auto-promote normal orders that have waited more than Auto_p time steps
 	while (normalOrders.getHead()) 
 	{
@@ -394,52 +445,89 @@ void Restaurant::AssignOrders(int TimeStep)
 		}
 		else break; 
 	}
-	//Assign 1 normal order
-	if (normalOrders.getHead())
+
+	string line6 = "Assigned Orders in the last time step: ";
+	//Assign normal orders to available normal cooks
+	while (normalOrders.getHead() && !normalCooks.isEmpty())
 	{
 		pOrd = normalOrders.DeleteAndReturnFirst();
-		AddtoInserviceOrders(pOrd, TimeStep);
+		normalCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "N" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
+		availableNCooks--;
 	} 
-	//Assign 1 vegan order
-	if (!veganOrders.isEmpty())
+	//Assign vegan orders to available vegan cooks
+	while (!veganOrders.isEmpty() && !veganCooks.isEmpty())
 	{
 		veganOrders.dequeue(pOrd);
-		AddtoInserviceOrders(pOrd, TimeStep);
+		veganCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "G" + to_string(pCook->GetID()) + "(G" + to_string(pOrd->GetID()) + ") ";
+		availableGCooks--;
 	}
-	//Assign 1 VIP order
-	if (VIPOrders.getHead())
+	//Assign VIP orders to available VIP cooks
+	while (VIPOrders.getHead() && !VIPCooks.isEmpty())
 	{
 		pOrd = VIPOrders.DeleteAndReturnLargest(1);
-		AddtoInserviceOrders(pOrd, TimeStep);
+		VIPCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "V" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		availableVCooks--;
 	}
+	//If there are still VIP orders, assign normal cooks to them
+	while (VIPOrders.getHead() && !normalCooks.isEmpty()) {
+		pOrd = VIPOrders.DeleteAndReturnLargest(1);
+		normalCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "N" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		availableNCooks--;
+	}
+	//If there are still VIP orders, assign vegan cooks to them
+	while (VIPOrders.getHead() && !veganCooks.isEmpty()) {
+		pOrd = VIPOrders.DeleteAndReturnLargest(1);
+		veganCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "G" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		availableGCooks--;
+	}
+	//If there are still normal orders, assign VIP cooks to them
+	while (normalOrders.getHead() && !VIPCooks.isEmpty()) {
+		pOrd = normalOrders.DeleteAndReturnFirst();
+		VIPCooks.dequeue(pCook);
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "V" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
+		availableVCooks--;
+	}
+	//Print assigned orders info
+	pGUI->PrintMessage(line6, 6);
 }
 
 //Moves inservice orders to finished orders
 void Restaurant::ServeOrders(int TimeStep)
 {
-	if (TimeStep % 5 != 0)
-		return; 
+	Node<Order*>* nodeOrd = inServiceOrders.getHead();
 	Order* pOrd;
-	//Serve 1 normal order
-	if (inServiceOrders.getHead())
+	while (nodeOrd)
 	{
-		pOrd = inServiceOrders.ReturnAndRemove(TYPE_NRM);
-		if(pOrd)
+		if (nodeOrd->getItem()->getFinishTime() <= TimeStep) {
+			pOrd = inServiceOrders.ReturnAndRemove(nodeOrd->getItem()->GetID());
 			AddtoFinishedOrders(pOrd, TimeStep);
+		}
+		nodeOrd = nodeOrd->getNext();
 	}
-	//Serve 1 vegan order
-	if (inServiceOrders.getHead())
+}
+
+//Returns cooks who are done with their orders or breaks into the availableCooks list
+void Restaurant::FreeCooks(int TimeStep) {
+	Node<Cook*>* nodeCook = idleCooks.getHead();
+	Cook* pCook;
+	while (nodeCook)
 	{
-		pOrd = inServiceOrders.ReturnAndRemove(TYPE_VGAN);
-		if(pOrd)
-			AddtoFinishedOrders(pOrd, TimeStep);
-	}
-	//Serve 1 VIP order
-	if (inServiceOrders.getHead())
-	{
-		pOrd = inServiceOrders.ReturnAndRemove(TYPE_VIP);
-		if(pOrd)
-			AddtoFinishedOrders(pOrd, TimeStep);
+		if (nodeCook->getItem()->getFinishTime() <= TimeStep) {
+			pCook = idleCooks.ReturnAndRemove((double)nodeCook->getItem()->GetID());
+			ReturntoAvailableCooks(pCook);
+		}
+		nodeCook = nodeCook->getNext();
 	}
 }
 
@@ -450,13 +538,15 @@ void Restaurant::Statusbar()
 	string line3 = "Orders Waiting: " + to_string(NO + VO + veganInWait)
 		+ " [ Norm: " + to_string(NO) + ", Veg: " + to_string(veganInWait) +
 		", VIP: " + to_string(VO) + " ]";
-	string line4 = "Cooks: " + to_string(NCooksCount + GCooksCount + VCooksCount)
-		+ " [ Norm: " + to_string(NCooksCount) + ", Veg: " + to_string(GCooksCount) +
-		", VIP: " + to_string(VCooksCount) + " ]";
+	string line4 = "Available Cooks: " + to_string(availableNCooks + availableGCooks + availableVCooks)
+		+ " [ Norm: " + to_string(availableNCooks) + ", Veg: " + to_string(availableGCooks) +
+		", VIP: " + to_string(availableVCooks) + " ]";
+	string line5 = "Served Orders: " + to_string(doneNOrders + doneGOrders + doneVOrders)
+		+ " [ Norm: " + to_string(doneNOrders) + ", Veg: " + to_string(doneGOrders) +
+		", VIP: " + to_string(doneVOrders) + " ]";
 	pGUI->PrintMessage(line3, 3, 0); 
 	pGUI->PrintMessage(line4, 4, 0);
-
-	
+	pGUI->PrintMessage(line5, 5, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

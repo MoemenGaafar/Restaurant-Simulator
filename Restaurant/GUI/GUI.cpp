@@ -183,12 +183,6 @@ void GUI::DrawSingleItem(const DrawingItem* pDitem, int RegionCount) const      
 		x = refX + (DrawDistance-1)*OrderWidth + DrawDistance; //(Distance)
 		y = refY + (YPos-1)*OrderHeight + YPos; // YPos
 		break;
-	//case DONE_REG:
-	//	refX = (WindWidth/2 - RestWidth/2);
-	//	refY = YHalfDrawingArea + OrderHeight; //
-	//	x = refX - DrawDistance*OrderWidth - DrawDistance; //(Distance)
-	//	y = refY + (YPos-1)*OrderHeight + YPos; // YPos
-	//	break;
 	default:
 		break;
 	}

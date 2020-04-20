@@ -35,6 +35,7 @@ private:
 	LinkedList<Order*> waitingOrders; //Contains all waiting orders
 
 	int NOrdersCount = 0, GOrdersCount = 0, VOrdersCount = 0; //Number of added Normal, Vegan, and VIP orders 
+	int doneNOrders = 0, doneGOrders = 0, doneVOrders = 0; //Number of served Normal, Vegan, and VIP orders
 	int veganInWait = 0; //Number of vegan orders in waiting
 	LinkedList<Order*> inServiceOrders; //Contains all in-service orders
 
@@ -44,15 +45,12 @@ private:
 	Queue<Cook*> veganCooks; //Contains all availabe vegan cooks
 	Queue<Cook*> VIPCooks; //Contains all availabe VIP cooks 
 
-	LinkedList<Cook*> inServiceCooks; //Contains all in-service Cooks
+	LinkedList<Cook*> idleCooks; //Contains all in-service and in-break Cooks
 
 	LinkedList<Cook*> availableCooks; //Contains all available cooks
 
 	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
-
-	Queue<Cook*> inBreakCooks; //Contains cooks taking breaks
-	
-	
+	int availableNCooks, availableGCooks, availableVCooks; //Number of available Normal, Vegan, and VIP cooks
 
 public:
 
@@ -87,9 +85,8 @@ public:
 
 	//Functions that add orders/cooks to inservice and finished/ inservice and available lists 
 	void AddtoFinishedOrders(Order* po, int TimeStep); 
-	void AddtoInserviceOrders(Order* po, int TimeStep); 
-
-	
+	void AddtoInserviceOrdersCooks(Order* po, Cook* pc, int TimeStep); 
+	void ReturntoAvailableCooks(Cook* pc);
 	void AddEvent(Event* pEvent); //Adds events to events queue 
 	void CancelNormalOrder(int id); //Cancels a normal order using its ID
 	void PromoteNormalOrder(int id, double extraMoney); //Promotes a normal order using its ID
@@ -107,6 +104,7 @@ public:
 	void ExecuteEvents(int TimeStep);	//Executes all events at current timestep
 	void AssignOrders(int TimeStep);  //Moves waiting orders to inservice orders 
 	void ServeOrders(int TimeStep); //Moves inservice orders to finished orders
+	void FreeCooks(int TimeStep); //Moves idle cooks to available cooks
 	void Statusbar(); //Updates information on status bar
 
 

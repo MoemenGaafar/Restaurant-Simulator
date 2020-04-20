@@ -8,9 +8,10 @@ class Cook
 	int ID;   
 	ORD_TYPE type;	//for each order type there is a corresponding type (VIP, Normal, Vegan)
 	int speed;		//dishes it can prepare in one clock tick (in one timestep)
-	int nDishesUntilBreak; //number of dishes a cook prepares before taking a break
-	int breakDuration; //duration of break after preparing n dishes
-	int FinishTime; //time till a cook finishes an order 
+	const int nOrdersUntilBreak; //number of dishes a cook prepares before taking a break
+	const int breakDuration; //duration of break after preparing n dishes
+	int ordersLeftUntilBreak; //actual number of dishes the cook has left before taking the break
+	int FinishTime; //time till a cook is available 
 
 public:
 	Cook();
@@ -22,4 +23,9 @@ public:
 	void setType(ORD_TYPE) ;
 	int getFinishTime() const;
 	void setFinishTime(int t);
+	int getSpeed();
+	void minusOrdersTillBreak();
+	int getOrdersTillBreak();
+	const int getBreakDuration();
+	void resetOrderstillBreak();
 };

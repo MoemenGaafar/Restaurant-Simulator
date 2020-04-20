@@ -239,6 +239,30 @@ public:
 		return false;
 	}
 
+	//Overriding this function to delete a cook using its ID
+	bool DeleteNode(Cook &pc) {
+		Node<Cook*>* P = Head;
+		Node<Cook*>* R;
+		while (P) {
+			if (P->getItem()->GetID() == pc.GetID()) {
+				if (P == Head) {
+					DeleteFirst(); return true;
+				}
+				else {
+					if (P == Tail)
+						Tail = R;
+					R->setNext(P->getNext());
+					delete P;
+					count--;
+					return true;
+				}
+			}
+			R = P;
+			P = P->getNext();
+		}
+		return false;
+	}
+
 	//[7] DeleteNodes
 	//deletes ALL node with the given value (if found) and returns true
 	//if not found, returns false
@@ -334,6 +358,30 @@ public:
 				else {
 					if (P == Tail)
 						Tail = R; 
+					R->setNext(P->getNext());
+				}
+				count--;
+				return P->getItem();
+			}
+			R = P;
+			P = P->getNext();
+		}
+	}
+
+	//Overloading this function to find, return and remove an order based on its ID
+	Cook* ReturnAndRemove(double Key) {
+		Node<Cook*>* P = Head;
+		Node<Cook*>* R;
+		while (P) {
+			if (P->getItem()->GetID() == Key) {
+				if (P == Head) {
+					Head = P->getNext();
+					if (P == Tail)
+						Tail = nullptr;
+				}
+				else {
+					if (P == Tail)
+						Tail = R;
 					R->setNext(P->getNext());
 				}
 				count--;

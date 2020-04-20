@@ -3,8 +3,6 @@
 
 
 
-
-
 enum ORD_TYPE	//types of orders
 {
 	TYPE_NRM,	//normal order

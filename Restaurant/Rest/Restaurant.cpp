@@ -499,7 +499,7 @@ void Restaurant::AssignOrders(int TimeStep)
 		availableVCooks--;
 	}
 	//Print assigned orders info
-	pGUI->PrintMessage(line6, 6);
+	pGUI->PrintMessage(line6, 6, 0);
 }
 
 //Moves inservice orders to finished orders

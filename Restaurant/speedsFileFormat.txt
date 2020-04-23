@@ -1,0 +1,9 @@
+N G V
+BO
+S1 B1 S2 B2 .... [[this line contains the speed and the break time for normal chefs]]
+S1 B1 S2 B2 .... [[this line contains the speed and the break time for vegan chefs]]
+S1 B1 S2 B2 .... [[this line contains the speed and the break time for VIP chefs]]
+Auto_p
+No. of events
+...
+...

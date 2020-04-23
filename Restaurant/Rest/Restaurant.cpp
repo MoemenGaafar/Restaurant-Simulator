@@ -4,10 +4,11 @@
 #include <iostream>
 #include <math.h>
 #include<fstream>
+#include<iomanip>
 #include "Restaurant.h"
 
 
-
+ofstream outputfile;
 
 Restaurant::Restaurant():VIPOrders(500), normalCooks(500), VIPCooks(500), veganCooks(500)
 {
@@ -24,7 +25,9 @@ Restaurant::~Restaurant()
 
 ///////////////////////////////////// FUNCTION TO RUN RESTAURANT SIMULATION /////////////////
 void Restaurant::RunSimulation()
-{
+{    
+	outputfile.open("output.txt");
+	outputfile << setw(6) << left << "FT" << setw(6) << left << "ID" << setw(6) << left << "AT" << setw(6) << left << "WT" << setw(6) << left << "ST" << endl;
 	pGUI = new GUI;
 	pGUI->PrintMessage("Welcome to your restaurant!");
 	pLoad->Excuete(); //Takes event file from user and loads it into restaurant
@@ -59,12 +62,16 @@ void Restaurant::RunSimulation()
 	string line5 = "Avg Wait = " + to_string(Avg_wait) 
 		+ ", " + "Avg Serv = " + to_string(Avg_serv); 	
 	string line6 = "Auto-promoted = " + to_string(Auto_promoted_count); 
-	//In next phase, print lines 3, 4, 5 to file too
 	pGUI->PrintMessage(line3, 3, 0);
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
 	pGUI->PrintMessage(line6, 6, 0); 
-	Sleep(4000); 
+	Sleep(4000);
+	outputfile << line3 << endl;
+	outputfile << line4 << endl;
+	outputfile << line5 << endl;
+	outputfile << line6 << endl;
+	outputfile.close();
 }
 
 ///////////////////////////// RESTAURANT SETTERS AND GETTERS ///////////////////////
@@ -176,6 +183,11 @@ void Restaurant::AddtoFinishedOrders(Order* po, int TimeStep) {
 		Avg_wait = Avg_wait * finishedOrdersCount +( double(po->getServTime()) - (double)po->getArrTime());
 		Avg_serv = Avg_serv * finishedOrdersCount + (double(TimeStep) - (double)po->getServTime());
 
+
+		//output file 
+		int ST = TimeStep - po->getServTime();
+		int WT =po->getServTime()- po->getArrTime();
+		outputfile << setw(6) << left <<po->getFinishTime()<< setw(6) << left << po->GetID() << setw(6) << left << po->getArrTime() << setw(6) << left << WT<< setw(6) << left <<ST<< endl;
 		//Draw the finished order
 		if (mode != MODE_SLNT)
 			pGUI->DrawFinishedOrder(po);

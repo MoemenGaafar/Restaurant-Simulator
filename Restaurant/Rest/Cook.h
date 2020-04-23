@@ -12,8 +12,12 @@ class Cook
 	const int breakDuration; //duration of break after preparing n dishes
 	int ordersLeftUntilBreak; //actual number of dishes the cook has left before taking the break
 	int FinishTime; //time till a cook is available 
+	int HealthTime; //timestep at which a cook is treated from an injury
 
 public:
+
+	bool speedIsOdd; //if the speed is odd (to be used when cook gets injured)
+
 	Cook();
 	Cook(int, ORD_TYPE, int, int, int);
 	virtual ~Cook();
@@ -24,8 +28,13 @@ public:
 	int getFinishTime() const;
 	void setFinishTime(int t);
 	int getSpeed();
+	void setSpeed(int);
 	void minusOrdersTillBreak();
 	int getOrdersTillBreak();
 	const int getBreakDuration();
 	void resetOrderstillBreak();
+	int getHealthTime(); 
+	void setHealthTime(int); 
+
+	
 };

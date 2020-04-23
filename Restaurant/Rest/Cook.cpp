@@ -11,7 +11,9 @@ Cook::Cook(int id, ORD_TYPE inputType, int inputSpeed, int inputNOrdersUntilBrea
 	ID = id; 
 	type = inputType;
 	speed = inputSpeed;
+	speedIsOdd = inputSpeed % 2; 
 	ordersLeftUntilBreak = inputNOrdersUntilBreak;
+	HealthTime = -1; 
 }
 
 Cook::~Cook()
@@ -53,6 +55,11 @@ int Cook::getSpeed() {
 	return speed;
 }
 
+void Cook::setSpeed(int s)
+{
+	speed = s; 
+}
+
 void Cook::minusOrdersTillBreak() {
 	ordersLeftUntilBreak--;
 }
@@ -69,5 +76,14 @@ void Cook::resetOrderstillBreak() {
 	ordersLeftUntilBreak = nOrdersUntilBreak;
 }
 
+int Cook::getHealthTime()
+{
+	return HealthTime; 
+}
+
+void Cook::setHealthTime(int t)
+{
+	HealthTime = t; 
+}
 
 

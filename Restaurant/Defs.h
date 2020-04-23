@@ -33,6 +33,8 @@ enum PROG_MODE	//mode of the program interface
 
 #define MaxPossibleOrdCnt 999	//max possible order count (arbitrary value)
 #define MaxPossibleMcCnt  100	//max possible cook count (arbitrary value)
+#define TreatmentTime 4 //Timesteps it takes a cook to heal
+#define OrdersPerInjury 100 //Number of orders out of which one causes its cook an injury
 
 
 #endif

@@ -6,12 +6,15 @@
 #include "..\GUI\GUI.h"
 #include "..\Generic_DS\Queue.h"
 #include "..\Generic_DS\LinkedList.h"
+#include "..\Generic_DS\Heap.h"
 #include "..\Events\ArrivalEvent.h"
 #include "..\Events\CancelEvent.h"
 #include "..\Events\PromoteEvent.h"
 #include <string>
 #include "Order.h"
 #include "Load.h"
+#include <cstdlib> 
+#include <time.h>
 
 
 
@@ -30,7 +33,7 @@ private:
 		
 	LinkedList<Order*> normalOrders; //Contains all unassigned Normal orders
 	Queue<Order*> veganOrders; //Contains all unassigned Vegan orders
-	LinkedList<Order*> VIPOrders; //Contains all unassigned VIP orders
+	Heap<Order*> VIPOrders; //Contains all unassigned VIP orders
 
 	LinkedList<Order*> waitingOrders; //Contains all waiting orders
 
@@ -41,9 +44,13 @@ private:
 
 	int finishedOrdersCount = 0;  //Number of finished orders 
 
-	Queue<Cook*> normalCooks; //Contains all available normal cooks
-	Queue<Cook*> veganCooks; //Contains all availabe vegan cooks
-	Queue<Cook*> VIPCooks; //Contains all availabe VIP cooks 
+	Heap<Cook*> normalCooks; //Contains all available normal cooks
+	Heap<Cook*> veganCooks; //Contains all availabe vegan cooks
+	Heap<Cook*> VIPCooks; //Contains all availabe VIP cooks 
+
+	Queue<Cook*> InormalCooks; //Contains all injured normal cooks
+	Queue<Cook*> IveganCooks; //Contains all injured vegan cooks
+	Queue<Cook*> IVIPCooks; //Contains all injured VIP cooks 
 
 	LinkedList<Cook*> idleCooks; //Contains all in-service and in-break Cooks
 
@@ -51,6 +58,7 @@ private:
 
 	int NCooksCount, GCooksCount, VCooksCount; //Number of added Normal, Vegan, and VIP cooks
 	int availableNCooks, availableGCooks, availableVCooks; //Number of available Normal, Vegan, and VIP cooks
+	int injuredNCooks = 0, injuredGCooks = 0, injuredVCooks = 0; //Number of idle injured Normal, Vegan, and VIP cooks
 
 public:
 
@@ -86,7 +94,7 @@ public:
 	//Functions that add orders/cooks to inservice and finished/ inservice and available lists 
 	void AddtoFinishedOrders(Order* po, int TimeStep); 
 	void AddtoInserviceOrdersCooks(Order* po, Cook* pc, int TimeStep); 
-	void ReturntoAvailableCooks(Cook* pc);
+	void ReturntoAvailableCooks(Cook* pc, int CurrentTimeStep);
 	void AddEvent(Event* pEvent); //Adds events to events queue 
 	void CancelNormalOrder(int id); //Cancels a normal order using its ID
 	void PromoteNormalOrder(int id, double extraMoney); //Promotes a normal order using its ID
@@ -102,6 +110,7 @@ public:
 
 	// Functions to excuete simulation actions in current timestep
 	void ExecuteEvents(int TimeStep);	//Executes all events at current timestep
+	void ReturnHealedCooks(int TimeStep); //Returns healed cooks from injured lists to available lists
 	void AssignOrders(int TimeStep);  //Moves waiting orders to inservice orders 
 	void ServeOrders(int TimeStep); //Moves inservice orders to finished orders
 	void FreeCooks(int TimeStep); //Moves idle cooks to available cooks

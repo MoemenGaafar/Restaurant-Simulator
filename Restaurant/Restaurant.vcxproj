@@ -100,6 +100,7 @@
     <ClInclude Include="Events\CancelEvent.h" />
     <ClInclude Include="Events\Event.h" />
     <ClInclude Include="Events\PromoteEvent.h" />
+    <ClInclude Include="Generic_DS\Heap.h" />
     <ClInclude Include="Generic_DS\LinkedList.h" />
     <ClInclude Include="Generic_DS\Node.h" />
     <ClInclude Include="Generic_DS\Queue.h" />

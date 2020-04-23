@@ -120,6 +120,9 @@
     <ClInclude Include="Rest\Restaurant.h">
       <Filter>Rest</Filter>
     </ClInclude>
+    <ClInclude Include="Generic_DS\Heap.h">
+      <Filter>Rest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMUgraphicsLib\jpeg\jcomapi.c">

@@ -8,9 +8,10 @@
 
 
 
-Restaurant::Restaurant()
+Restaurant::Restaurant():VIPOrders(500), normalCooks(500), VIPCooks(500), veganCooks(500)
 {
 	pGUI = NULL;
+	srand(time(NULL));
 }
 
 Restaurant::~Restaurant()
@@ -62,7 +63,7 @@ void Restaurant::RunSimulation()
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
 	pGUI->PrintMessage(line6, 6, 0); 
-	Sleep(4500); 
+	Sleep(4000); 
 }
 
 ///////////////////////////// RESTAURANT SETTERS AND GETTERS ///////////////////////
@@ -110,7 +111,6 @@ PROG_MODE Restaurant::getMode() {
 //Determines type of order 
 ORD_TYPE Restaurant::typeFinder(int key) {
 	if (normalOrders.Find(key)) return TYPE_NRM;
-	if (VIPOrders.Find(key)) return TYPE_VIP;
 	else return TYPE_VGAN;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ void Restaurant::AddNormalCook(Cook* pC)
 {
 	if (pC->GetType() == TYPE_NRM)
 	{
-		normalCooks.enqueue(pC);
+		normalCooks.Insert(pC);
 		availableCooks.InsertEnd(pC);
 	} 
 }
@@ -130,7 +130,7 @@ void Restaurant::AddVeganCook(Cook* pC)
 {
 	if (pC->GetType() == TYPE_VGAN)
 	{
-		veganCooks.enqueue(pC);
+		veganCooks.Insert(pC);
 		availableCooks.InsertEnd(pC);
 	}
 }
@@ -138,7 +138,7 @@ void Restaurant::AddVIPCook(Cook* pC)
 {
 	if (pC->GetType() == TYPE_VIP)
 	{
-		VIPCooks.enqueue(pC);
+		VIPCooks.Insert(pC);
 		availableCooks.InsertEnd(pC);
 	}
 }
@@ -160,7 +160,7 @@ void Restaurant::AddtoVeganOrders(Order* po) {
 }
 
 void Restaurant::AddtoVIPOrders(Order* po) {
-	VIPOrders.InsertEnd(po);
+	VIPOrders.Insert(po);
 	VOrdersCount++; 
 	waitingOrders.InsertEnd(po);
 }
@@ -215,6 +215,7 @@ void Restaurant::AddtoInserviceOrdersCooks(Order* po, Cook* pc, int TimeStep)
 	//Set order finish time
 	po->setFinishTime(finishtime);
 
+	
 	//COOK
 	//Decrement the ordersTillBreak counter of the cook by one
 	pc->minusOrdersTillBreak();
@@ -225,22 +226,70 @@ void Restaurant::AddtoInserviceOrdersCooks(Order* po, Cook* pc, int TimeStep)
 	//Remove the cook from the drawing list
 	availableCooks.DeleteNode(*pc);
 
+	//Determine if cook will get injured while preparing this order 
+	if (pc->getHealthTime() == -1) // assuming an injured cook will be extra careful to not get injured again
+	{
+		int Injury = rand() % OrdersPerInjury; //assuming the probablity that a cook gets injured while preparing an order in 1/OrdersPerInjury percent
+		if (Injury == 0)
+			pc->setHealthTime(0);
+	}
+
 	//Insert to list of inservice orders and idle cooks
 	inServiceOrders.InsertEnd(po);
 	idleCooks.InsertEnd(pc);
 	
 }
 
-void Restaurant::ReturntoAvailableCooks(Cook* pc) {
+void Restaurant::ReturntoAvailableCooks(Cook* pc, int CurrentTimeStep) {
 	//If the cook is returning from a break, reset his ordersTillBreak counter
-	if (pc->getOrdersTillBreak() == 0) pc->resetOrderstillBreak();
-	//Return cook to the availableCooks list
-	availableCooks.InsertEnd(pc);
-	//Increment the counters of available cooks
-	switch (pc->GetType()) {
-	case TYPE_NRM: normalCooks.enqueue(pc); availableNCooks++; break;
-	case TYPE_VGAN: veganCooks.enqueue(pc); availableGCooks++; break;
-	case TYPE_VIP: VIPCooks.enqueue(pc); availableVCooks++;
+	if (pc->getOrdersTillBreak() == 0)
+	{
+		pc->resetOrderstillBreak();
+		if (pc->getHealthTime() > 0)
+		{
+			if (pc -> speedIsOdd)
+				pc->setSpeed(1 + pc->getSpeed() * 2);
+			else 
+				pc->setSpeed(pc->getSpeed() * 2);
+			pc->setHealthTime(-1); 
+		}
+	}
+
+	//If the cook gor injured while preparing last order, send it to respective list of injured cooks
+	if (pc->getHealthTime() == 0)
+	{
+		switch (pc->GetType()) {
+		case TYPE_NRM:
+			InormalCooks.enqueue(pc);
+			injuredNCooks++;  break;
+		case TYPE_VGAN:
+			IveganCooks.enqueue(pc);
+			injuredGCooks++; break;
+		case TYPE_VIP:
+			IVIPCooks.enqueue(pc);
+			injuredVCooks++;
+		}
+
+		// Set time the cook will be treated to current time + time for full treatment
+		pc->setHealthTime(CurrentTimeStep + TreatmentTime); 
+
+	}
+	//Otherwise return cook it to the available cooks lists
+	else
+	{
+		availableCooks.InsertEnd(pc);
+		//Increment the counters of available cooks
+		switch (pc->GetType()) {
+		case TYPE_NRM:
+			normalCooks.Insert(pc);
+			availableNCooks++;  break;
+		case TYPE_VGAN:
+			veganCooks.Insert(pc);
+			availableGCooks++; break;
+		case TYPE_VIP:
+			VIPCooks.Insert(pc);
+			availableVCooks++;
+		}
 	}
 }
 
@@ -271,7 +320,7 @@ void Restaurant::PromoteNormalOrder(int id, double extraMoney) {
 	if (oldNormal)
 	{
 		Order* newVIP = new Order(oldNormal->getArrTime(), id, TYPE_VIP, oldNormal->getTotalMoney() + extraMoney, oldNormal->getNDishes());
-		VIPOrders.InsertEnd(newVIP);
+		VIPOrders.Insert(newVIP);
 		//Change type in waiting orders list 
 		Node<Order*>* originalOrderNode = waitingOrders.Return(id);
 		originalOrderNode->setItem(newVIP);
@@ -331,7 +380,7 @@ void Restaurant::modeInteractive()
 	hence although the waiting lists have are not empty, no orders are being serviced.
 
 	*/
-	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || !VIPOrders.isEmpty())
 	{
 		//print current timestep
 		itoa(CurrentTimeStep, timestep, 10);
@@ -363,7 +412,7 @@ void Restaurant::modeStep()
 	char timestep[10];
 
 	//Loop till all events are excueted and all orders are finished 
-	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || !VIPOrders.isEmpty())
 	{
 		//print current timestep
 		itoa(CurrentTimeStep, timestep, 10);
@@ -394,7 +443,7 @@ void Restaurant::modeSilent()
 	int CurrentTimeStep = 1;
 
 	//Loop till all events are excueted and all orders are finished 
-	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || VIPOrders.getHead())
+	while (!EventsQueue.isEmpty() || inServiceOrders.getHead() || normalOrders.getHead() || veganInWait != 0 || !VIPOrders.isEmpty())
 	{
 		//Excuete events in this time step
 		ExecuteEvents(CurrentTimeStep);
@@ -430,11 +479,63 @@ void Restaurant::ExecuteEvents(int CurrentTimeStep)
 
 }
 
+//Returns healed cooks from injured lists to available lists
+void Restaurant::ReturnHealedCooks(int CurrentTimeStep)
+{
+	Cook* pCook;
+	while (!InormalCooks.isEmpty())
+	{
+		InormalCooks.peekFront(pCook); 
+		if (CurrentTimeStep == pCook->getHealthTime())
+		{
+			InormalCooks.dequeue(pCook);
+			injuredNCooks--;
+			pCook->setHealthTime(-1);
+			normalCooks.Insert(pCook);
+			availableNCooks++;			
+			availableCooks.InsertEnd(pCook);
+		}
+		else break;
+	}
+	while (!IVIPCooks.isEmpty())
+	{
+		IVIPCooks.peekFront(pCook);
+		if (CurrentTimeStep == pCook->getHealthTime())
+		{
+			IVIPCooks.dequeue(pCook);
+			injuredVCooks--;
+			pCook->setHealthTime(-1);
+			VIPCooks.Insert(pCook);
+			availableVCooks++;
+			availableCooks.InsertEnd(pCook);
+		}
+		else break;
+	}
+	while (!IveganCooks.isEmpty())
+	{
+		IveganCooks.peekFront(pCook);
+		if (CurrentTimeStep == pCook->getHealthTime())
+		{
+			IveganCooks.dequeue(pCook);
+			injuredGCooks--;
+			pCook->setHealthTime(-1);
+			veganCooks.Insert(pCook);
+			availableVCooks++;
+			availableCooks.InsertEnd(pCook);
+		}
+		else break;
+	}
+}
+
 //Moves waiting orders to inservice orders
 void Restaurant::AssignOrders(int TimeStep)
 {
 	Order* pOrd; 
 	Cook* pCook;
+
+	//Returns healed cooks from injured lists to available lists
+	ReturnHealedCooks(TimeStep); 
+
 	//Auto-promote normal orders that have waited more than Auto_p time steps
 	while (normalOrders.getHead()) 
 	{
@@ -448,44 +549,89 @@ void Restaurant::AssignOrders(int TimeStep)
 
 	string line6 = "Assigned Orders in the last time step: ";
 	//Assign VIP orders to available VIP cooks
-	while (VIPOrders.getHead() && !VIPCooks.isEmpty())
+	while (!VIPOrders.isEmpty() && !VIPCooks.isEmpty())
 	{
-		pOrd = VIPOrders.DeleteAndReturnLargest(1);
-		VIPCooks.dequeue(pCook);
+		pOrd = VIPOrders.ExtractMax();
+		pCook = VIPCooks.ExtractMax();
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "V" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
 		availableVCooks--;
 	}
 	//If there are still VIP orders, assign normal cooks to them
-	while (VIPOrders.getHead() && !normalCooks.isEmpty()) {
-		pOrd = VIPOrders.DeleteAndReturnLargest(1);
-		normalCooks.dequeue(pCook);
+	while (!VIPOrders. isEmpty() && !normalCooks.isEmpty()) {
+		pOrd = VIPOrders.ExtractMax();
+		pCook = normalCooks.ExtractMax();
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "N" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
 		availableNCooks--;
 	}
 	//If there are still VIP orders, assign vegan cooks to them
-	while (VIPOrders.getHead() && !veganCooks.isEmpty()) {
-		pOrd = VIPOrders.DeleteAndReturnLargest(1);
-		veganCooks.dequeue(pCook);
+	while (!VIPOrders.isEmpty() && !veganCooks.isEmpty()) {
+		pOrd = VIPOrders.ExtractMax();
+		pCook = veganCooks.ExtractMax();
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "G" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
 		availableGCooks--;
 	}
+
+
+	//If there are still VIP orders , assign injured VIP cooks to theme
+	while (!VIPOrders.isEmpty() && !IVIPCooks.isEmpty())
+	{
+		pOrd = VIPOrders.ExtractMax();
+		IVIPCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2)); 
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "V" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		injuredVCooks--; 
+	}
+	//If there are still VIP orders, assign injured normal cooks to them
+	while (!VIPOrders.isEmpty() && !InormalCooks.isEmpty()) {
+		pOrd = VIPOrders.ExtractMax();
+		InormalCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2));
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "N" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		injuredNCooks--;
+	}
+	//If there are still VIP orders, assign injured vegan cooks to them
+	while (!VIPOrders.isEmpty() && !IveganCooks.isEmpty()) {
+		pOrd = VIPOrders.ExtractMax();
+		IveganCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2));
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "G" + to_string(pCook->GetID()) + "(V" + to_string(pOrd->GetID()) + ") ";
+		injuredGCooks--;
+	}
+
+
 	//Assign vegan orders to available vegan cooks
 	while (!veganOrders.isEmpty() && !veganCooks.isEmpty())
 	{
 		veganOrders.dequeue(pOrd);
-		veganCooks.dequeue(pCook);
+		pCook = veganCooks.ExtractMax();
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "G" + to_string(pCook->GetID()) + "(G" + to_string(pOrd->GetID()) + ") ";
 		availableGCooks--;
 	}
+
+	//If there are still vegan orders assign them to injured vegan cooks 
+	while (!veganOrders.isEmpty() && !IveganCooks.isEmpty())
+	{
+		veganOrders.dequeue(pOrd);
+		IveganCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2));
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "G" + to_string(pCook->GetID()) + "(G" + to_string(pOrd->GetID()) + ") ";
+		injuredGCooks--;
+	}
+
+
 	//Assign normal orders to available normal cooks
 	while (normalOrders.getHead() && !normalCooks.isEmpty())
 	{
 		pOrd = normalOrders.DeleteAndReturnFirst();
-		normalCooks.dequeue(pCook);
+		pCook = normalCooks.ExtractMax();
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "N" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
 		availableNCooks--;
@@ -493,10 +639,30 @@ void Restaurant::AssignOrders(int TimeStep)
 	//If there are still normal orders, assign VIP cooks to them
 	while (normalOrders.getHead() && !VIPCooks.isEmpty()) {
 		pOrd = normalOrders.DeleteAndReturnFirst();
-		VIPCooks.dequeue(pCook);
+		pCook = VIPCooks.ExtractMax(); 
 		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
 		line6 += "V" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
 		availableVCooks--;
+	}
+
+	//If there are still normal orders, assign normal orders to injured normal cooks
+	while (normalOrders.getHead() && !normalCooks.isEmpty())
+	{
+		pOrd = normalOrders.DeleteAndReturnFirst();
+		InormalCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2));
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "N" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
+		injuredNCooks--;
+	}
+	//If there are still normal orders, assign injured VIP cooks to them
+	while (normalOrders.getHead() && !VIPCooks.isEmpty()) {
+		pOrd = normalOrders.DeleteAndReturnFirst();
+		IVIPCooks.dequeue(pCook);
+		pCook->setSpeed(floor(pCook->getSpeed() / 2));
+		AddtoInserviceOrdersCooks(pOrd, pCook, TimeStep);
+		line6 += "V" + to_string(pCook->GetID()) + "(N" + to_string(pOrd->GetID()) + ") ";
+		injuredVCooks--;
 	}
 	//Print assigned orders info
 	pGUI->PrintMessage(line6, 6, 0);
@@ -525,7 +691,7 @@ void Restaurant::FreeCooks(int TimeStep) {
 	{
 		if (nodeCook->getItem()->getFinishTime() <= TimeStep) {
 			pCook = idleCooks.ReturnAndRemove((double)nodeCook->getItem()->GetID());
-			ReturntoAvailableCooks(pCook);
+			ReturntoAvailableCooks(pCook, TimeStep);
 		}
 		nodeCook = nodeCook->getNext();
 	}
@@ -544,9 +710,13 @@ void Restaurant::Statusbar()
 	string line5 = "Served Orders: " + to_string(doneNOrders + doneGOrders + doneVOrders)
 		+ " [ Norm: " + to_string(doneNOrders) + ", Veg: " + to_string(doneGOrders) +
 		", VIP: " + to_string(doneVOrders) + " ]";
+	string line7 = "Injured Cooks: " + to_string(injuredNCooks + injuredGCooks + injuredVCooks)
+		+ " [ Norm: " + to_string(injuredNCooks) + ", Veg: " + to_string(injuredGCooks) +
+		", VIP: " + to_string(injuredVCooks) + " ]";
 	pGUI->PrintMessage(line3, 3, 0); 
 	pGUI->PrintMessage(line4, 4, 0);
 	pGUI->PrintMessage(line5, 5, 0);
+	pGUI->PrintMessage(line7, 7, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

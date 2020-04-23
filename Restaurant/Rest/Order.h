@@ -42,10 +42,7 @@ public:
 	double getTotalMoney() const;
 
 	int getNDishes() const;
-	//
-	// TODO: Add More Member Functions As Needed
-	//
-
+	
 };
 
 #endif

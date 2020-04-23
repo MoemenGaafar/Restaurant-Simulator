@@ -2,6 +2,7 @@
 #include "Rest\Restaurant.h"
 #include "GUI\GUI.h"
 
+
 int main()
 {
 	
@@ -10,5 +11,5 @@ int main()
 	
 	delete pRest;
 	
-	return 0; //FirstCommit
+	return 0;
 }

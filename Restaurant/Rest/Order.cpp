@@ -1,4 +1,5 @@
 #include "Order.h"
+#include <iostream>
 
 Order::Order(int arrivalTime, int id, ORD_TYPE ordType, double money, int dishes)
 {
@@ -80,3 +81,4 @@ double Order::getTotalMoney() const {
 int Order::getNDishes() const {
 	return nDishes;
 }
+

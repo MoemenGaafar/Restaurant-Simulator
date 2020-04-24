@@ -207,7 +207,7 @@ void Heap<T>::heapifydown(bool isPointer)
 			if (hasRightChild(index) && Gthan(elements[getRightChildIndex(index)], elements[getLeftChildIndex(index)]))
 				greaterChildIndex = getRightChildIndex(index);
 
-			if (Gthan(temp, elements[greaterChildIndex]))
+			if (!Sthan(temp, elements[greaterChildIndex]))
 				break;
 			else
 				swap(index, greaterChildIndex);

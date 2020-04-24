@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <iostream>
 #include <math.h>
-#include<fstream>
-#include<iomanip>
+#include <fstream>
+#include <iomanip>
 #include "Restaurant.h"
 
 
@@ -659,7 +659,7 @@ void Restaurant::AssignOrders(int TimeStep)
 	}
 
 	//If there are still normal orders, assign normal orders to injured normal cooks
-	while (normalOrders.getHead() && !normalCooks.isEmpty())
+	while (normalOrders.getHead() && !InormalCooks.isEmpty())
 	{
 		pOrd = normalOrders.DeleteAndReturnFirst();
 		InormalCooks.dequeue(pCook);
@@ -669,7 +669,7 @@ void Restaurant::AssignOrders(int TimeStep)
 		injuredNCooks--;
 	}
 	//If there are still normal orders, assign injured VIP cooks to them
-	while (normalOrders.getHead() && !VIPCooks.isEmpty()) {
+	while (normalOrders.getHead() && !IVIPCooks.isEmpty()) {
 		pOrd = normalOrders.DeleteAndReturnFirst();
 		IVIPCooks.dequeue(pCook);
 		pCook->setSpeed(floor(pCook->getSpeed() / 2));

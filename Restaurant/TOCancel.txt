@@ -1,0 +1,6 @@
+FT    ID    AT    WT    ST    
+2     1     1     0     1     
+Orders: 14 [ Norm: 14, Veg: 0, VIP: 0 ]
+Cooks: 2 [ Norm: 1, Veg: 1, VIP: 0 ]
+Avg Wait = 0.000000, Avg Serv = 1.000000
+Auto-promoted = 0
